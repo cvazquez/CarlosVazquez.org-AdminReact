@@ -1,5 +1,14 @@
 {
   "name": "app-admin",
+  "author": {
+    "name": "Carlos Vaqzuez",
+    "email": "cvazquez1976@gmail.com",
+    "url": "http://www.carlosvazquez.org"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cvazquez/CarlosVazquez.org-AdminReact"
+  },
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -8,10 +17,11 @@
     "@testing-library/user-event": "^7.2.1",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
+    "react-router-dom": "^5.2.0",
     "react-scripts": "3.4.1"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "start": "PORT=3004 WDS_SOCKET_PORT=3004 react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
