@@ -1,4 +1,5 @@
 import React from "react";
+import { Editor } from '@tinymce/tinymce-react';
 
 export default class Edit extends React.Component {
 	constructor(props) {
@@ -8,8 +9,20 @@ export default class Edit extends React.Component {
 			id			: props.match.params.id,
 			error		: null,
 			isLoaded	: false,
-			entry		: []
+			form		: {
+				title			: null,
+				teaser			: null,
+				metaDescription	: null,
+				metaKeyWords	: null,
+				publishAt		: null
+			},
+			updatePosted : false
+
 		};
+
+		this.handleEditorChange = this.handleEditorChange.bind(this);
+		this.handleTextUpdate = this.handleTextUpdate.bind(this);
+		this.handleSubmit = this.handleSubmit.bind(this);
 	}
 
 	getPost() {
@@ -19,7 +32,15 @@ export default class Edit extends React.Component {
 				result => {
 					this.setState({
 						isLoaded	: true,
-						entry		: result.post[0]
+						form		: {
+							title			: result.post[0].title,
+							teaser			: result.post[0].teaser,
+							content			: result.post[0].content,
+							metaDescription	: result.post[0].metaDescription,
+							metaKeyWords	: result.post[0].metaKeyWords,
+							publishAt		: result.post[0].publishAt,
+							entryId			: result.post[0].id
+						}
 					})
 				},
 				error => {
@@ -43,8 +64,62 @@ export default class Edit extends React.Component {
 		}
 	}
 
+	handleEditorChange = (content, editor) => {
+		const form = this.state.form;
+
+		form.content = content;
+
+		this.setState({
+			form
+		});
+	}
+
+	handleTextUpdate(event) {
+		const form = this.state.form;
+
+		form[event.target.name] = event.target.value;
+
+		this.setState({
+			form
+		});
+	}
+
+	handleSubmit(event) {
+		event.preventDefault();
+
+		// Save comment to database
+		fetch(`${process.env.REACT_APP_API_URL}/blog/api/admin/updatePost`, {
+							method	: 'POST',
+							body	: JSON.stringify(this.state.form),
+							headers	: {	'Content-Type': 'application/json'}
+						})
+						.then(res => res.json())
+						.then(json => {
+							(json.status && json.status.affectedRows && json.status.affectedRows > 0) &&
+								this.setState({
+									updatePosted	: true
+								});
+						});
+	}
+
+	saveDraft() {
+		// Save draft to database
+		fetch(`${process.env.REACT_APP_API_URL}/blog/api/admin/saveDraft`, {
+							method	: 'POST',
+							body	: JSON.stringify(this.state.form),
+							headers	: {	'Content-Type': 'application/json'}
+						})
+						.then(res => res.json())
+						.then(json => {
+							(json.status && json.status.affectedRows && json.status.affectedRows > 0) &&
+								this.setState({
+									updatePosted	: true
+								});
+						});
+	}
+
 	post() {
-		const {error, isLoaded, entry} = this.state;
+		const {error, isLoaded} = this.state;
 
 		if (error) {
 			return <div>Error: {error.message}</div>;
@@ -54,7 +129,66 @@ export default class Edit extends React.Component {
 
 			return (
 					<div className="edit">
-						{entry.title}
+						<form method="post" onSubmit={this.handleSubmit}>
+							<div className="meta-fields">
+
+								<input 	type="text"
+										name="title"
+										value={this.state.form.title}
+										placeholder="Title"
+										onChange={this.handleTextUpdate} />
+
+								<input 	type="text"
+										name="teaser"
+										value={this.state.form.teaser}
+										placeholder="Teaser"
+										onChange={this.handleTextUpdate} />
+
+								<input 	type="text"
+										name="metaDescription"
+										value={this.state.form.metaDescription}
+										placeholder="Meta Description"
+										onChange={this.handleTextUpdate} />
+
+								<input 	type="text"
+										name="metaKeyWords"
+										value={this.state.form.metaKeyWords}
+										placeholder="Meta Keywords"
+										onChange={this.handleTextUpdate} />
+
+								<input 	type="text"
+										name="publishAt"
+										value={this.state.form.publishAt}
+										placeholder="Publish Date/Time"
+										onChange={this.handleTextUpdate} />
+
+								{/* <select name="categories"></select> */}
+							</div>
+
+							<div className="editor">
+								<Editor
+									initialValue	= {this.state.form.content}
+									apiKey			= {process.env.REACT_APP_TINYMCE_API_KEY}
+									init			= {{
+										menubar	: false,
+										plugins	: [
+											'save advlist autolink lists link image charmap print preview anchor',
+											'searchreplace visualblocks code fullscreen',
+											'insertdatetime media table paste code help wordcount'
+										],
+										toolbar	:
+											`save undo redo | formatselect | bold italic backcolor |
+											alignleft aligncenter alignright alignjustify |
+											bullist numlist outdent indent | removeformat | help`,
+										save_onsavecallback: function () {}
+									}}
+									onEditorChange={this.handleEditorChange}
+									onSaveContent={ev => this.saveDraft()}
+								/>
+							</div>
+
+							<input type="submit" name="submitPost" value="Save" />
+						</form>
 					</div>
 			)
 		}

@@ -39,4 +39,26 @@ li {
 
 .edit {
 	text-align: left;
+	margin: 50px 0px 0px 10%;
+	width: 80%;
+}
+
+.edit .meta-fields input {
+	padding: 10px;
+	border-radius: 5px;
+	width: 80%;
+	margin-bottom: 10px;
+}
+
+.editor {
+	margin: 0px 0px 50px 0px;
+}
+
+.editor .tox.tox-tinymce {
+	height	: 480px!important;
+	width	: 80%;
+}
+
+.edit input[name="submit"] {
+	margin: 0px 0px 50px 0px;
 }
