@@ -15,7 +15,7 @@ export default function App() {
   return (
 		<Router>
 			<div>
-				<ul>
+				<ul className="header">
 					<li>
 						<Link to="/">Home</Link>
 					</li>

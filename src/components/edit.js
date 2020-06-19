@@ -9,38 +9,60 @@ export default class Edit extends React.Component {
 			id			: props.match.params.id,
 			error		: null,
 			isLoaded	: false,
+			categories	: null,
+			category	: null,
+			categoriesByName	: {},
+			categoriesById		: [],
 			form		: {
 				title			: null,
 				teaser			: null,
 				metaDescription	: null,
 				metaKeyWords	: null,
-				publishAt		: null
+				publishAt		: null,
+				categoryNamesSelected : []
 			},
 			updatePosted : false
-
 		};
 
 		this.handleEditorChange = this.handleEditorChange.bind(this);
 		this.handleTextUpdate = this.handleTextUpdate.bind(this);
 		this.handleSubmit = this.handleSubmit.bind(this);
+		this.handleCategoryUpdate = this.handleCategoryUpdate.bind(this);
+		this.handleCategoryClick = this.handleCategoryClick.bind(this);
+		this.handleCategoryClickRemove = this.handleCategoryClickRemove.bind(this);
 	}
 
 	getPost() {
-		fetch("http://dev.api.carlosvazquez.org/blog/api/admin/getPost/" + this.state.id)
+		fetch(`${process.env.REACT_APP_API_URL}/blog/api/admin/getPost/` + this.state.id)
 			.then(res => res.json())
 			.then(
 				result => {
+					const 	post = result.post[0],
+							categoriesByName = {},
+							categoriesById	= [];
+
+					result.categories.forEach((item, index) => {
+						categoriesByName[item.name] = item.id;
+						categoriesById[item.id] = item.name;
+					})
+
 					this.setState({
 						isLoaded	: true,
+						categories	: result.categories,
+						categoriesByName	: categoriesByName,
+						categoriesById		: categoriesById,
+						categoryOverlay		: null,
 						form		: {
-							title			: result.post[0].title,
-							teaser			: result.post[0].teaser,
-							content			: result.post[0].content,
-							metaDescription	: result.post[0].metaDescription,
-							metaKeyWords	: result.post[0].metaKeyWords,
-							publishAt		: result.post[0].publishAt,
-							entryId			: result.post[0].id
-						}
+							title			: post.title,
+							teaser			: post.teaser,
+							content			: post.content,
+							metaDescription	: post.metaDescription,
+							metaKeyWords	: post.metaKeyWords,
+							publishAt		: post.publishAt,
+							entryId			: post.id,
+							categoryNamesSelected	: []
+						},
+						categoryNamesSelectedDisplay : []
 					})
 				},
 				error => {
@@ -84,6 +106,78 @@ export default class Edit extends React.Component {
 		});
 	}
 
+	handleCategoryClickRemove(event) {
+		const	form = this.state.form,
+				categoryNamesSelectedDisplay = [],
+				categoryNamesSelected = form.categoryNamesSelected;
+
+		form.categoryNamesSelected = categoryNamesSelected.filter(categoryName => categoryName !== event.currentTarget.dataset.name);
+
+		for(let index in form.categoryNamesSelected) {
+			categoryNamesSelectedDisplay.push(
+				<li key={form.categoryNamesSelected[index]}>
+					{form.categoryNamesSelected[index]}
+					<span className="close" data-name={form.categoryNamesSelected[index]} onClick={this.handleCategoryClickRemove}>x</span>
+				</li>);
+		}
+
+		this.setState({
+			categoryNamesSelectedDisplay : categoryNamesSelectedDisplay,
+			form
+		})
+
+	}
+
+	handleCategoryClick(event) {
+		const	state	= this.state,
+				form	= state.form,
+				dataSet	= event.currentTarget.dataset,
+				categoryName	= dataSet.value;
+
+		form.categoryNamesSelected.push(categoryName);
+		state.categoryNamesSelectedDisplay.push(
+				<li key={categoryName}>
+					{categoryName}
+					<span className="close" data-name={categoryName} onClick={this.handleCategoryClickRemove}>x</span>
+				</li>);
+
+		this.setState({
+			categoryNamesSelectedDisplay : state.categoryNamesSelectedDisplay,
+			form
+		})
+	}
+
+	buildResultsOverlay(results) {
+		return(
+			<div className="search-results-container">
+				<ul className="search-results-overlay">
+					{
+						results.length ?
+							results.map((result, index) => (
+								<li key			= {result}
+									data-value	= {result}
+									data-id		= {index}
+									onClick		= {this.handleCategoryClick}>
+									{result}
+								</li>
+							)) : "No Results Founds"
+					}
+				</ul>
+			</div>
+		)
+	}
+
+	handleCategoryUpdate(event) {
+		const results = event.target.value.trim().length ? this.state.categoriesById.filter(term => {
+							const regex = RegExp(event.target.value, "gi");
+							return regex.test(term);
+						}) : '';
+
+		this.setState({
+			categoryOverlay	: this.buildResultsOverlay(results)
+		});
+	}
+
 	handleSubmit(event) {
 		event.preventDefault();
 
@@ -119,7 +213,7 @@ export default class Edit extends React.Component {
 	}
 
 	post() {
-		const {error, isLoaded} = this.state;
+		const {error, isLoaded, form} = this.state;
 
 		if (error) {
 			return <div>Error: {error.message}</div>;
@@ -134,40 +228,47 @@ export default class Edit extends React.Component {
 
 								<input 	type="text"
 										name="title"
-										value={this.state.form.title}
+										value={form.title}
 										placeholder="Title"
 										onChange={this.handleTextUpdate} />
 
 								<input 	type="text"
 										name="teaser"
-										value={this.state.form.teaser}
+										value={form.teaser}
 										placeholder="Teaser"
 										onChange={this.handleTextUpdate} />
 
 								<input 	type="text"
 										name="metaDescription"
-										value={this.state.form.metaDescription}
+										value={form.metaDescription}
 										placeholder="Meta Description"
 										onChange={this.handleTextUpdate} />
 
 								<input 	type="text"
 										name="metaKeyWords"
-										value={this.state.form.metaKeyWords}
+										value={form.metaKeyWords}
 										placeholder="Meta Keywords"
 										onChange={this.handleTextUpdate} />
 
 								<input 	type="text"
 										name="publishAt"
-										value={this.state.form.publishAt}
+										value={form.publishAt}
 										placeholder="Publish Date/Time"
 										onChange={this.handleTextUpdate} />
 
-								{/* <select name="categories"></select> */}
+								<input	type		= "text"
+										autoComplete = "off"
+										name		= "categories"
+										placeholder	= "Start Typing a Category"
+										value		= {form.categoryName}
+										onChange	= {this.handleCategoryUpdate} />
+								<ul className="category-names-selected">{this.state.categoryNamesSelectedDisplay}</ul>
+								<div>{this.state.categoryOverlay}</div>
 							</div>
 
 							<div className="editor">
 								<Editor
-									initialValue	= {this.state.form.content}
+									initialValue	= {form.content}
 									apiKey			= {process.env.REACT_APP_TINYMCE_API_KEY}
 									init			= {{
 										menubar	: false,

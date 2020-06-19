@@ -17,7 +17,7 @@ export default class Posts extends React.Component {
 	}
 
 	componentDidMount() {
-		fetch("http://dev.api.carlosvazquez.org/blog/api/admin/getEditList")
+		fetch(`${process.env.REACT_APP_API_URL}/blog/api/admin/getEditList`)
 			.then(res => res.json())
 			.then(
 				result => {
