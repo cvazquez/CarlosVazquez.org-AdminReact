@@ -21,6 +21,8 @@ export default class Edit extends React.Component {
 				publishAt		: null,
 				categoryNamesSelected : []
 			},
+			categoryNamesSelectedDisplay : [],
+			postCategories		: [],
 			updatePosted : false
 		};
 
@@ -30,6 +32,7 @@ export default class Edit extends React.Component {
 		this.handleCategoryUpdate = this.handleCategoryUpdate.bind(this);
 		this.handleCategoryClick = this.handleCategoryClick.bind(this);
 		this.handleCategoryClickRemove = this.handleCategoryClickRemove.bind(this);
+		this.handleSearchResultsClose = this.handleSearchResultsClose.bind(this);
 	}
 
 	getPost() {
@@ -39,12 +42,24 @@ export default class Edit extends React.Component {
 				result => {
 					const 	post = result.post[0],
 							categoriesByName = {},
-							categoriesById	= [];
+							categoriesById	= [],
+							categoryNamesSelected = [],
+							categoryNamesSelectedDisplay = [];
 
-					result.categories.forEach((item, index) => {
+					result.categories.forEach(item => {
 						categoriesByName[item.name] = item.id;
 						categoriesById[item.id] = item.name;
-					})
+					});
+
+					result.postCategories.forEach(postCategory => {
+						categoryNamesSelected.push(postCategory.name);
+
+						categoryNamesSelectedDisplay.push(
+							<li key={postCategory.name}>
+								{postCategory.name}
+								<span className="close" data-name={postCategory.name} onClick={this.handleCategoryClickRemove}>x</span>
+							</li>);
+					});
 
 					this.setState({
 						isLoaded	: true,
@@ -60,10 +75,11 @@ export default class Edit extends React.Component {
 							metaKeyWords	: post.metaKeyWords,
 							publishAt		: post.publishAt,
 							entryId			: post.id,
-							categoryNamesSelected	: []
+							categoryNamesSelected	: categoryNamesSelected
 						},
-						categoryNamesSelectedDisplay : []
-					})
+						categoryNamesSelectedDisplay : categoryNamesSelectedDisplay,
+						postCategories		: result.postCategories
+					});
 				},
 				error => {
 					this.setState({
@@ -134,22 +150,34 @@ export default class Edit extends React.Component {
 				dataSet	= event.currentTarget.dataset,
 				categoryName	= dataSet.value;
 
-		form.categoryNamesSelected.push(categoryName);
-		state.categoryNamesSelectedDisplay.push(
+		if(form.categoryNamesSelected.indexOf(categoryName) === -1) {
+			form.categoryNamesSelected.push(categoryName);
+
+			state.categoryNamesSelectedDisplay.push(
 				<li key={categoryName}>
 					{categoryName}
 					<span className="close" data-name={categoryName} onClick={this.handleCategoryClickRemove}>x</span>
-				</li>);
+				</li>
+			);
+
+			this.setState({
+				categoryNamesSelectedDisplay : state.categoryNamesSelectedDisplay,
+				form
+			})
+		}
+	}
+
+	handleSearchResultsClose() {
 
 		this.setState({
-			categoryNamesSelectedDisplay : state.categoryNamesSelectedDisplay,
-			form
-		})
+			categoryOverlay	: ''
+		});
 	}
 
 	buildResultsOverlay(results) {
 		return(
 			<div className="search-results-container">
+				<div className="close" onClick={this.handleSearchResultsClose}>x</div>
 				<ul className="search-results-overlay">
 					{
 						results.length ?
@@ -167,14 +195,20 @@ export default class Edit extends React.Component {
 		)
 	}
 
+	escapeRegExp(text) {
+		return text.replace(/[-[\]{}()*+?.,\\^$|#\\s]/g, '\\$&');
+	}
+
 	handleCategoryUpdate(event) {
-		const results = event.target.value.trim().length ? this.state.categoriesById.filter(term => {
-							const regex = RegExp(event.target.value, "gi");
-							return regex.test(term);
+		const 	searchTerms = event.target.value.trim(),
+				results = searchTerms.length ? this.state.categoriesById.filter(term => {
+							const regex = RegExp(this.escapeRegExp(searchTerms), "gi");
+
+							return (regex.test(term) && this.state.form.categoryNamesSelected.indexOf(term) === -1);
 						}) : '';
 
 		this.setState({
-			categoryOverlay	: this.buildResultsOverlay(results)
+			categoryOverlay	: searchTerms.length ? this.buildResultsOverlay(results, searchTerms) : ''
 		});
 	}
 

@@ -92,6 +92,7 @@ ul.header li {
 	text-align: left;
 	overflow-x: hidden;
 	padding-right: 25px;
+	margin-top: 0px;
 }
 
 .search-results-container ul.search-results-overlay li {
@@ -107,10 +108,22 @@ ul.header li {
 	cursor: pointer;
 }
 
+.search-results-container .close {
+	text-align: right;
+	margin: 10px 20px 0px 0px;
+	font-weight: bold;
+}
+
+.search-results-container .close:hover {
+	cursor: pointer;
+	color: gray;
+}
+
+
 ul.category-names-selected {
 	list-style-type: none;
 	margin-top: 0px;
-	width: 20%;
+	width: 25%;
 }
 
 ul.category-names-selected li {
@@ -128,4 +141,8 @@ ul.category-names-selected li span.close {
 
 ul.category-names-selected li span.close:hover {
 	cursor: pointer;
+}
+
+input[name="submitPost"] {
+	margin-bottom: 50px;
 }
