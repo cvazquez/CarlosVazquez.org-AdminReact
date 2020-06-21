@@ -17,6 +17,9 @@ code {
     monospace;
 }
 
+
+/****** Header *******/
+
 ul.header {
 	text-align: left;
 	list-style-type: none;
@@ -26,6 +29,9 @@ ul.header li {
 	display: inline;
 	margin: 0px 10px;
 }
+
+
+/******** List of Posts *******/
 
 .grid-container {
 	display: grid;
@@ -37,17 +43,26 @@ ul.header li {
 	padding: 10px;
 }
 
+
+/******** Editor ********/
+
 .edit {
 	text-align: left;
 	margin: 50px 0px 0px 10%;
 	width: 80%;
 }
 
-.edit .meta-fields input {
+.edit .meta-fields input,
+.edit .meta-fields select {
 	padding: 10px;
 	border-radius: 5px;
-	width: 80%;
+	width: 50%;
 	margin-bottom: 10px;
+}
+
+.edit .meta-fields select {
+	width: 75px;
+	margin: 0px 10px 10px 0px;
 }
 
 .editor {
@@ -63,12 +78,20 @@ ul.header li {
 	margin: 0px 0px 50px 0px;
 }
 
+input[name="submitPost"] {
+	margin-bottom: 50px;
+}
+
+
+/********  Search Results ********/
+
 .search-results-container {
 	width: 50%;
 	background-color: var(--color-white);
 	border: 1px solid silver;
 	border-radius: 10px;
 	z-index: 10000;
+	margin: 0px 0px 10px 0px;
 
 	@media (max-width: 768px) {
 		width: 75%;
@@ -96,11 +119,14 @@ ul.header li {
 }
 
 .search-results-container ul.search-results-overlay li {
-	border-bottom: 1px solid silver;
 	padding: 10px 0px;
 	display: block;
 	color: black;
 	font-weight: 600;
+}
+
+.search-results-container ul.search-results-overlay li:not(:last-child) {
+	border-bottom: 1px solid silver;
 }
 
 .search-results-container ul.search-results-overlay li:hover {
@@ -120,10 +146,13 @@ ul.header li {
 }
 
 
+/****** Category Names Selected ******/
+
 ul.category-names-selected {
-	list-style-type: none;
-	margin-top: 0px;
-	width: 25%;
+	list-style-type	: none;
+	margin-top		: 0px;
+	margin-left		: -25px;
+	width			: 25%;
 }
 
 ul.category-names-selected li {
@@ -141,8 +170,4 @@ ul.category-names-selected li span.close {
 
 ul.category-names-selected li span.close:hover {
 	cursor: pointer;
-}
-
-input[name="submitPost"] {
-	margin-bottom: 50px;
 }
