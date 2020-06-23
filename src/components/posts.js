@@ -41,6 +41,13 @@ export default class Posts extends React.Component {
 		)
 	}
 
+	add() {
+		return (
+			<Route	path		= "/posts/add"
+					component	= {Edit} />
+		)
+	}
+
 	handleEditClick() {
 		document.getElementById("posts").style.display = "none";
 	}
@@ -80,7 +87,8 @@ export default class Posts extends React.Component {
 
 	render = () =>
 		(<div>
-			{document.location.pathname.indexOf("edit") === -1 && this.list()}
-			{this.edit()}
+			{!RegExp(/edit|add/).test(document.location.pathname) && this.list()}
+			{document.location.pathname.indexOf("edit") > -1 && this.edit()}
+			{document.location.pathname.indexOf("add") > -1 && this.add()}
 		</div>)
 }

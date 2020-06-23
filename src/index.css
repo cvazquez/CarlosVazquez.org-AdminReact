@@ -66,7 +66,7 @@ ul.header li {
 }
 
 .editor {
-	margin: 0px 0px 50px 0px;
+	margin: 0px 0px 25px 0px;
 }
 
 .editor .tox.tox-tinymce {
@@ -80,6 +80,29 @@ ul.header li {
 
 input[name="submitPost"] {
 	margin-bottom: 50px;
+}
+
+
+/******* Save Post alerts - copied from bootstrap https://getbootstrap.com/docs/4.0/components/alerts/ *******/
+.alert {
+	position: relative;
+    padding: .75rem 1.25rem;
+    margin-bottom: 1rem;
+    border: 1px solid transparent;
+    border-radius: .25rem;
+	width: 25%;
+}
+
+.alert.alert-success {
+	color: #155724;
+	background-color: #d4edda;
+	border-color: #c3e6cb;
+}
+
+.alert.alert-danger {
+	color: #721c24;
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
 }
 
 

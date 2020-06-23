@@ -1,8 +1,11 @@
 import React from "react";
-import { Editor } from '@tinymce/tinymce-react';
+import Form from "./form";
+import { Redirect } from 'react-router-dom'
 
 export default class Edit extends React.Component {
 	constructor(props) {
+		const date = new Date();
+
 		super(props);
 
 		this.state = {
@@ -10,32 +13,36 @@ export default class Edit extends React.Component {
 			error					: null,
 			isLoaded				: false,
 			categories				: null,
-			category				: null,
 			categoriesByName		: {},
 			categoriesById			: [],
 			form		: {
-				title					: null,
-				teaser					: null,
-				metaDescription			: null,
-				metaKeyWords			: null,
-				publishAt				: null,
-				publishYear				: null,
-				publishMonth			: null,
-				publishDay				: null,
-				publishHour				: null,
-				publishMinute			: null,
+				title					: "",
+				teaser					: "",
+				metaDescription			: "",
+				metaKeyWords			: "",
+				publishAt				: "",
+				publishYear				: date.getFullYear(),
+				publishMonth			: date.getMonth()+1,
+				publishDay				: date.getDate(),
+				publishHour				: date.getHours(),
+				publishMinute			: date.getMinutes(),
 				categoryNamesSelected 	: []
 			},
 			categoryNamesSelectedDisplay	: [],
+			categoriesSelectedLowerCased	: [],
 			postCategories					: [],
 			updatePosted 					: false,
 			deletedCategories				: false,
-			savedCategories					: false
-
+			savedCategories					: false,
+			saveStatus						: null,
+			redirect						: null
 		};
+
+		this.setPublishAtDate();
 
 		this.handleEditorChange			= this.handleEditorChange.bind(this);
 		this.handleTextUpdate 			= this.handleTextUpdate.bind(this);
+		this.handleSaveDraft			= this.handleSaveDraft.bind(this);
 		this.handleSubmit 				= this.handleSubmit.bind(this);
 		this.handleCategoryInput 		= this.handleCategoryInput.bind(this);
 		this.handleCategoryClick 		= this.handleCategoryClick.bind(this);
@@ -73,29 +80,59 @@ export default class Edit extends React.Component {
 					});
 
 					this.setState({
-						isLoaded	: true,
-						categories	: result.categories,
+						isLoaded			: true,
+						categories			: result.categories,
 						categoriesByName	: categoriesByName,
 						categoriesById		: categoriesById,
 						categoryOverlay		: null,
 						form		: {
-							title			: post.title,
-							teaser			: post.teaser,
-							content			: post.content,
-							metaDescription	: post.metaDescription,
-							metaKeyWords	: post.metaKeyWords,
-							publishAt		: post.publishAt,
-							publishYear		: publishDate.getFullYear(),
-							publishMonth	: publishDate.getMonth()+1,
-							publishDay		: publishDate.getDate(),
-							publishHour		: publishDate.getHours(),
-							publishMinute	: publishDate.getMinutes(),
-							entryId			: post.id,
+							title					: post.title,
+							teaser					: post.teaser,
+							content					: post.content,
+							metaDescription			: post.metaDescription,
+							metaKeyWords			: post.metaKeyWords,
+							publishAt				: post.publishAt,
+							publishYear				: publishDate.getFullYear(),
+							publishMonth			: publishDate.getMonth()+1,
+							publishDay				: publishDate.getDate(),
+							publishHour				: publishDate.getHours(),
+							publishMinute			: publishDate.getMinutes(),
+							entryId					: post.id,
 							categoryNamesSelected	: categoryNamesSelected
 						},
-						categoryNamesSelectedDisplay : categoryNamesSelectedDisplay,
-						categoriesSelectedLowerCased : categoryNamesSelectedLowerCased,
-						postCategories		: result.postCategories
+						categoryNamesSelectedDisplay	: categoryNamesSelectedDisplay,
+						categoriesSelectedLowerCased	: categoryNamesSelectedLowerCased,
+						postCategories					: result.postCategories
+					});
+				},
+				error => {
+					this.setState({
+						isLoaded	: false,
+						error
+					})
+				}
+			)
+	}
+
+	getCategories() {
+		fetch(`${process.env.REACT_APP_API_URL}/blog/api/admin/getCategories`)
+			.then(res => res.json())
+			.then(
+				result => {
+					const 	categoriesByName	= {},
+							categoriesById		= [];
+
+					result.categories.forEach(item => {
+						categoriesByName[item.name.toLowerCase()] = item.id;
+						categoriesById[item.id] = item.name.toLowerCase();
+					});
+
+					this.setState({
+						isLoaded						: true,
+						categories						: result.categories,
+						categoriesByName				: categoriesByName,
+						categoriesById					: categoriesById,
+						categoryOverlay					: null
 					});
 				},
 				error => {
@@ -108,7 +145,11 @@ export default class Edit extends React.Component {
 	}
 
 	componentDidMount() {
-		this.getPost();
+		if(this.state.id) {
+			this.getPost();
+		} else {
+			this.getCategories();
+		}
 	}
 
 	componentDidUpdate(prevProps) {
@@ -129,6 +170,30 @@ export default class Edit extends React.Component {
 		});
 	}
 
+	setPublishAtDate() {
+		const form = this.state.form;
+
+		form.publishAt =	form.publishYear +
+							"-" +
+							(form.publishMonth < 10 ? "0" : "") +
+							+
+							form.publishMonth +
+							"-" +
+							(form.publishDay < 10 ? "0" : "") +
+							form.publishDay +
+							" " +
+							(form.publishHour < 10 ? "0" : "") +
+							form.publishHour +
+							":" +
+							(form.publishMinute < 10 ? "0" : "") +
+							form.publishMinute +
+							":00";
+
+		this.setState({
+			form
+		});
+	}
+
 	handleTextUpdate(event) {
 		const	form				= this.state.form,
 				fieldName			= event.target.name,
@@ -137,26 +202,12 @@ export default class Edit extends React.Component {
 		form[fieldName] = event.target.value;
 
 		if(publishDateFields.indexOf(fieldName) > -1) {
-			form.publishAt =	form.publishYear +
-								"-" +
-								(form.publishMonth < 10 ? "0" : "") +
-								+
-								form.publishMonth +
-								"-" +
-								(form.publishDay < 10 ? "0" : "") +
-								form.publishDay +
-								" " +
-								(form.publishHour < 10 ? "0" : "") +
-								form.publishHour +
-								":" +
-								(form.publishMinute < 10 ? "0" : "") +
-								form.publishMinute +
-								":00";
+			form.publishAt = this.setPublishAtDate();
+		} else {
+			this.setState({
+				form
+			});
 		}
-
-		this.setState({
-			form
-		});
 	}
 
 	handleCategoryClickRemove(event) {
@@ -249,20 +300,39 @@ export default class Edit extends React.Component {
 	}
 
 	handleSubmit(event) {
+		let action;
 		event.preventDefault();
 
+		if(this.state.id) {
+			action = "updatePost";
+		} else {
+			action = "addPost";
+		}
+
 		// Save comment to database
-		fetch(`${process.env.REACT_APP_API_URL}/blog/api/admin/updatePost`, {
+		fetch(`${process.env.REACT_APP_API_URL}/blog/api/admin/${action}`, {
 							method	: 'POST',
 							body	: JSON.stringify(this.state.form),
 							headers	: {	'Content-Type': 'application/json'}
 						})
 						.then(res => res.json())
 						.then(json => {
-							(json.savePost && json.savePost.affectedRows && json.savePost.affectedRows > 0) &&
+
+							if(json.savePost && json.savePost.affectedRows && json.savePost.affectedRows > 0) {
 								this.setState({
-									updatePosted	: true
+									id				: this.state.id ? this.state.id : json.savePost.insertId,
+									updatePosted	: true,
+									saveStatus		: <div className="alert alert-success">Post Successfully Saved</div>,
+									redirect		: action === "addPost" && json.savePost.insertId > 0 ? `/posts/edit/${json.savePost.insertId}` : null
 								});
+
+								setTimeout(()=>{this.setState({saveStatus : null})}, 5000);
+							} else {
+								this.setState({
+									updatePosted	: false,
+									saveStatus		: <div className="alert alert-danger">Error Saving Post</div>
+								});
+							}
 
 							(json.deletePostCategories && json.deletePostCategories.affectedRows && json.deletePostCategories.affectedRows > 0) &&
 								this.setState({
@@ -276,7 +346,7 @@ export default class Edit extends React.Component {
 						});
 	}
 
-	saveDraft() {
+	handleSaveDraft() {
 		// Save draft to database
 		fetch(`${process.env.REACT_APP_API_URL}/blog/api/admin/saveDraft`, {
 							method	: 'POST',
@@ -295,133 +365,25 @@ export default class Edit extends React.Component {
 	post() {
 		const {error, isLoaded, form} = this.state;
 
+		if(this.state.redirect) {
+			return <Redirect to={this.state.redirect} />
+		}
+
 		if (error) {
 			return <div>Error: {error.message}</div>;
 		  } else if (!isLoaded) {
 			return <div>Loading...</div>;
 		  } else {
-				const d = new Date(),
-					  years		= [],
-					  months	= [],
-					  days		= [],
-					  hours		= [],
-					  minutes	= [];
-
-				for(let x = d.getFullYear(); x > 2005; x--) {
-					years.push(<option value={x} key={x}>{x}</option>);
-				}
-
-				for(let x = 1; x < 13; x++) {
-					months.push(<option value={x} key={x}>{x < 10 ? `0${x}` : x}</option>);
-				}
-
-				for(let x = 1; x < 32; x++) {
-					days.push(<option value={x} key={x}>{x < 10 ? `0${x}` : x}</option>);
-				}
-
-				for(let x = 0; x < 24; x++) {
-					hours.push(<option value={x} key={x}>{x < 10 ? `0${x}` : x}</option>);
-				}
-
-				for(let x = 0; x < 61; x++) {
-					minutes.push(<option value={x} key={x}>{x < 10 ? `0${x}` : x}</option>);
-				}
-
 			return (
-					<div className="edit">
-						<form method="post" onSubmit={this.handleSubmit}>
-							<div className="meta-fields">
-
-								<input 	type="text"
-										name="title"
-										value={form.title}
-										placeholder="Title"
-										onChange={this.handleTextUpdate} />
-
-								<input 	type="text"
-										name="teaser"
-										value={form.teaser}
-										placeholder="Teaser"
-										onChange={this.handleTextUpdate} />
-
-								<input 	type="text"
-										name="metaDescription"
-										value={form.metaDescription}
-										placeholder="Meta Description"
-										onChange={this.handleTextUpdate} />
-
-								<input 	type="text"
-										name="metaKeyWords"
-										value={form.metaKeyWords}
-										placeholder="Meta Keywords"
-										onChange={this.handleTextUpdate} />
-
-
-								<div>
-									<select	name		= "publishYear"
-											value		= {form.publishYear}
-											onChange	= {this.handleTextUpdate}>
-										{years}
-									</select>
-									<select	name		= "publishMonth"
-											value		= {form.publishMonth}
-											onChange	= {this.handleTextUpdate}>
-										{months}
-									</select>
-									<select	name		= "publishDay"
-											value		= {form.publishDay}
-											onChange	= {this.handleTextUpdate}>
-										{days}
-									</select>
-
-									&nbsp;&nbsp;&nbsp;
-									<select	name		= "publishHour"
-											value		= {form.publishHour}
-											onChange	= {this.handleTextUpdate}>
-										{hours}
-									</select>
-									<select	name		= "publishMinute"
-											value		= {form.publishMinute}
-											onChange	= {this.handleTextUpdate}>
-										{minutes}
-									</select>
-								</div>
-
-								<input	type		= "text"
-										autoComplete = "off"
-										name		= "categories"
-										placeholder	= "Start Typing a Category"
-										value		= {form.categoryName}
-										onChange	= {this.handleCategoryInput} />
-								<div>{this.state.categoryOverlay}</div>
-								<ul className="category-names-selected">{this.state.categoryNamesSelectedDisplay}</ul>
-							</div>
-
-							<div className="editor">
-								<Editor
-									initialValue	= {form.content}
-									apiKey			= {process.env.REACT_APP_TINYMCE_API_KEY}
-									init			= {{
-										menubar	: false,
-										plugins	: [
-											'save advlist autolink lists link image charmap print preview anchor',
-											'searchreplace visualblocks code fullscreen',
-											'insertdatetime media table paste code help wordcount'
-										],
-										toolbar	:
-											`save undo redo | formatselect | bold italic backcolor |
-											alignleft aligncenter alignright alignjustify |
-											bullist numlist outdent indent | removeformat | help`,
-										save_onsavecallback: function () {}
-									}}
-									onEditorChange={this.handleEditorChange}
-									onSaveContent={ev => this.saveDraft()}
-								/>
-							</div>
-
-							<input type="submit" name="submitPost" value="Save" />
-						</form>
-					</div>
+					<Form	form							= {form}
+							handleCategoryInput				= {this.handleCategoryInput}
+							handleTextUpdate				= {this.handleTextUpdate}
+							handleSubmit					= {this.handleSubmit}
+							handleEditorChange				= {this.handleEditorChange}
+							handleSaveDraft					= {this.handleSaveDraft}
+							saveStatus						= {this.state.saveStatus}
+							categoryOverlay					= {this.state.categoryOverlay}
+							categoryNamesSelectedDisplay	= {this.state.categoryNamesSelectedDisplay} />
 			)
 		}
 	}

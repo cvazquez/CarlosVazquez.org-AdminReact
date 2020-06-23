@@ -22,6 +22,9 @@ export default function App() {
 					<li>
 						<Link to="/posts" onClick={handlePostsClick}>Posts</Link>
 					</li>
+					<li>
+						<Link to="/posts/add" onClick={handlePostsClick}>Add</Link>
+					</li>
 				</ul>
 
 				<hr />
@@ -33,6 +36,9 @@ export default function App() {
 						<Posts />
 					</Route>
 					<Route path="/posts/edit">
+						<Posts />
+					</Route>
+					<Route path="/posts/add">
 						<Posts />
 					</Route>
 				</Switch>
