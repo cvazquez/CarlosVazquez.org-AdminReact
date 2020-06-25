@@ -1,5 +1,8 @@
 :root {
 	--color-white: #FFFFFF;
+	--color-white-smoke: #F1F1F1;
+
+	--background-color-hover: var(--color-white-smoke);
   }
 
 body {
@@ -90,7 +93,7 @@ input[name="submitPost"] {
     margin-bottom: 1rem;
     border: 1px solid transparent;
     border-radius: .25rem;
-	width: 25%;
+	width: 40%;
 }
 
 .alert.alert-success {
@@ -194,3 +197,36 @@ ul.category-names-selected li span.close {
 ul.category-names-selected li span.close:hover {
 	cursor: pointer;
 }
+
+
+/***********  Categories Admin *********/
+div.categories input {
+	min-width: 300px;
+	max-width: 400px;
+	padding: 10px;
+	margin: 10px;
+	border: 1px solid silver;
+	border-radius: 10px;
+}
+
+div.categories input:hover {
+	cursor: pointer;
+	background-color: var(--background-color-hover);
+}
+
+div.categories .blink {
+	-webkit-animation: 2s linear infinite condemned_blink_effect; /* for Safari 4.0 - 8.0 */
+	animation: 1s linear infinite condemned_blink_effect;
+}
+
+@keyframes condemned_blink_effect {
+	0% {
+	  visibility: hidden;
+	}
+	50% {
+	  visibility: hidden;
+	}
+	100% {
+	  visibility: visible;
+	}
+  }

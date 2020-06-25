@@ -6,6 +6,7 @@ import {
 	Link
   } from "react-router-dom";
 import Posts from './components/posts';
+import Categories from './components/categories'
 
 function handlePostsClick() {
 	if(document.getElementById("posts")) document.getElementById("posts").style.display = 'grid';
@@ -25,6 +26,9 @@ export default function App() {
 					<li>
 						<Link to="/posts/add" onClick={handlePostsClick}>Add</Link>
 					</li>
+					<li>
+						<Link to="/categories">Categories</Link>
+					</li>
 				</ul>
 
 				<hr />
@@ -40,6 +44,9 @@ export default function App() {
 					</Route>
 					<Route path="/posts/add">
 						<Posts />
+					</Route>
+					<Route path="/categories">
+						<Categories />
 					</Route>
 				</Switch>
 			</div>

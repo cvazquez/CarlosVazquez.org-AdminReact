@@ -26,7 +26,9 @@ export default class Edit extends React.Component {
 				publishDay				: date.getDate(),
 				publishHour				: date.getHours(),
 				publishMinute			: date.getMinutes(),
-				categoryNamesSelected 	: []
+				categoryName			: "",
+				categoryNamesSelected 	: [],
+				entryId					: null
 			},
 			categoryNamesSelectedDisplay	: [],
 			categoriesSelectedLowerCased	: [],
@@ -38,7 +40,7 @@ export default class Edit extends React.Component {
 			redirect						: null
 		};
 
-		this.setPublishAtDate();
+		//this.setPublishAtDate();
 
 		this.handleEditorChange			= this.handleEditorChange.bind(this);
 		this.handleTextUpdate 			= this.handleTextUpdate.bind(this);
@@ -65,7 +67,7 @@ export default class Edit extends React.Component {
 
 					result.categories.forEach(item => {
 						categoriesByName[item.name.toLowerCase()] = item.id;
-						categoriesById[item.id] = item.name.toLowerCase();
+						categoriesById[item.id] = item.name; // don't change case. Displays in category search overlay results
 					});
 
 					result.postCategories.forEach(postCategory => {
@@ -98,6 +100,7 @@ export default class Edit extends React.Component {
 							publishHour				: publishDate.getHours(),
 							publishMinute			: publishDate.getMinutes(),
 							entryId					: post.id,
+						// this breaks typing in the field ???	categoryName			: "",
 							categoryNamesSelected	: categoryNamesSelected
 						},
 						categoryNamesSelectedDisplay	: categoryNamesSelectedDisplay,
@@ -124,7 +127,7 @@ export default class Edit extends React.Component {
 
 					result.categories.forEach(item => {
 						categoriesByName[item.name.toLowerCase()] = item.id;
-						categoriesById[item.id] = item.name.toLowerCase();
+						categoriesById[item.id] = item.name; // don't change case. Displays in category search overlay results
 					});
 
 					this.setState({
@@ -232,13 +235,17 @@ export default class Edit extends React.Component {
 	}
 
 	handleCategoryClick(event) {
-		const	state	= this.state,
-				form	= state.form,
-				dataSet	= event.currentTarget.dataset,
-				categoryName	= dataSet.value;
+		const	state			= this.state,
+				form			= state.form,
+				dataSet			= event.currentTarget.dataset,
+				categoryName	= dataSet.value,
+				categoriesSelectedLowerCased = this.state.categoriesSelectedLowerCased;
 
 		if(form.categoryNamesSelected.indexOf(categoryName) === -1) {
 			form.categoryNamesSelected.push(categoryName);
+			categoriesSelectedLowerCased.push(categoryName.toLowerCase());
+
+			//form.categoryName = ""; //  A component is changing an uncontrolled input of type text to be controlled
 
 			state.categoryNamesSelectedDisplay.unshift(
 				<li key={categoryName}>
@@ -248,8 +255,10 @@ export default class Edit extends React.Component {
 			);
 
 			this.setState({
-				categoryNamesSelectedDisplay : state.categoryNamesSelectedDisplay,
-				form
+				categoryNamesSelectedDisplay	: state.categoryNamesSelectedDisplay,
+				categoryOverlay					: '',
+				form,
+				categoriesSelectedLowerCased
 			})
 		}
 	}
@@ -288,10 +297,10 @@ export default class Edit extends React.Component {
 	handleCategoryInput(event) {
 		const 	searchTerms	= event.target.value.toLowerCase().trim(),
 				results 	= searchTerms.length ? this.state.categoriesById.filter(term => {
-							const regex = RegExp(this.escapeRegExp(searchTerms), "gi");
+								const regex = RegExp(this.escapeRegExp(searchTerms), "gi");
 
-							// Found by regular expression and not in current categories list
-							return (regex.test(term) && this.state.categoriesSelectedLowerCased.indexOf(term) === -1);
+								// Found by regular expression and not in current categories list
+							return (regex.test(term) && this.state.categoriesSelectedLowerCased.indexOf(term.toLowerCase()) === -1);
 						}) : '';
 
 		this.setState({
@@ -319,14 +328,20 @@ export default class Edit extends React.Component {
 						.then(json => {
 
 							if(json.savePost && json.savePost.affectedRows && json.savePost.affectedRows > 0) {
+								let  postAdded = action === "addPost" && json.savePost.insertId > 0 ? true : false;
+
 								this.setState({
-									id				: this.state.id ? this.state.id : json.savePost.insertId,
+									id				: postAdded ? json.savePost.insertId : this.state.id,
 									updatePosted	: true,
-									saveStatus		: <div className="alert alert-success">Post Successfully Saved</div>,
-									redirect		: action === "addPost" && json.savePost.insertId > 0 ? `/posts/edit/${json.savePost.insertId}` : null
+									saveStatus		: <div className="alert alert-success">Post Successfully Saved{postAdded ? "...Redirecting in 5 Seconds" : ""}</div>
 								});
 
-								setTimeout(()=>{this.setState({saveStatus : null})}, 5000);
+								setTimeout(()=>{
+									this.setState({saveStatus	: null,
+													redirect	: postAdded ? `/posts/edit/${json.savePost.insertId}` : null
+												});
+
+								}, 5000);
 							} else {
 								this.setState({
 									updatePosted	: false,

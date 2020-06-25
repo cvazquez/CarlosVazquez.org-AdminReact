@@ -93,7 +93,7 @@ export default class Form extends React.Component {
 								autoComplete = "off"
 								name		= "categories"
 								placeholder	= "Start Typing a Category"
-								value		= {form.categoryName}
+								value		= {this.props.form.categoryName}
 								onChange	= {this.props.handleCategoryInput} />
 						<div>{this.props.categoryOverlay}</div>
 						<ul className="category-names-selected">{this.props.categoryNamesSelectedDisplay}</ul>
