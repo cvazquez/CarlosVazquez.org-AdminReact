@@ -200,7 +200,7 @@ ul.category-names-selected li span.close:hover {
 
 
 /***********  Categories Admin *********/
-div.categories input {
+.categories input {
 	min-width: 300px;
 	max-width: 400px;
 	padding: 10px;
@@ -209,14 +209,26 @@ div.categories input {
 	border-radius: 10px;
 }
 
-div.categories input:hover {
+.categories input:hover {
 	cursor: pointer;
 	background-color: var(--background-color-hover);
 }
 
-div.categories .blink {
+.categories button {
+	width: 50px;
+	padding: 10px;
+	margin: 10px;
+	border: 1px solid silver;
+	border-radius: 10px;
+}
+
+.categories .blink {
 	-webkit-animation: 2s linear infinite condemned_blink_effect; /* for Safari 4.0 - 8.0 */
 	animation: 1s linear infinite condemned_blink_effect;
+}
+
+.categories .category.saved {
+	background-color: #eef108;
 }
 
 @keyframes condemned_blink_effect {
