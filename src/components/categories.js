@@ -24,7 +24,7 @@ export default class Categories extends React.Component {
 	}
 
 	getCategories() {
-		fetch(`${process.env.REACT_APP_API_URL}/blog/api/admin/getCategories`)
+		fetch(`${process.env.REACT_APP_API_URL}/getCategories`)
 			.then(res => res.json())
 			.then(
 				result => {
@@ -80,7 +80,7 @@ export default class Categories extends React.Component {
 
 		if(this.categoriesById[id] === name) return;
 
-		fetch(`${process.env.REACT_APP_API_URL}/blog/api/admin/updateCategory`, {
+		fetch(`${process.env.REACT_APP_API_URL}/updateCategory`, {
 				method	: 'POST',
 				body	: JSON.stringify({id,name}),
 				headers	: {	'Content-Type': 'application/json'}
@@ -130,7 +130,7 @@ export default class Categories extends React.Component {
 	handleNewCategorySubmit(e) {
 		e.preventDefault();
 
-		fetch(`${process.env.REACT_APP_API_URL}/blog/api/admin/addCategory`, {
+		fetch(`${process.env.REACT_APP_API_URL}/addCategory`, {
 			method	: 'POST',
 			body	: JSON.stringify({newCategory : this.state.newCategory}),
 			headers	: {	'Content-Type': 'application/json'}

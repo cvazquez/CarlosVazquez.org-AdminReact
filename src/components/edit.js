@@ -53,7 +53,7 @@ export default class Edit extends React.Component {
 	}
 
 	getPost() {
-		fetch(`${process.env.REACT_APP_API_URL}/blog/api/admin/getPost/` + this.state.id)
+		fetch(`${process.env.REACT_APP_API_URL}/getPost/` + this.state.id)
 			.then(res => res.json())
 			.then(
 				result => {
@@ -118,7 +118,7 @@ export default class Edit extends React.Component {
 	}
 
 	getCategories() {
-		fetch(`${process.env.REACT_APP_API_URL}/blog/api/admin/getCategories`)
+		fetch(`${process.env.REACT_APP_API_URL}/getCategories`)
 			.then(res => res.json())
 			.then(
 				result => {
@@ -319,7 +319,7 @@ export default class Edit extends React.Component {
 		}
 
 		// Save comment to database
-		fetch(`${process.env.REACT_APP_API_URL}/blog/api/admin/${action}`, {
+		fetch(`${process.env.REACT_APP_API_URL}/${action}`, {
 							method	: 'POST',
 							body	: JSON.stringify(this.state.form),
 							headers	: {	'Content-Type': 'application/json'}
@@ -363,7 +363,7 @@ export default class Edit extends React.Component {
 
 	handleSaveDraft() {
 		// Save draft to database
-		fetch(`${process.env.REACT_APP_API_URL}/blog/api/admin/saveDraft`, {
+		fetch(`${process.env.REACT_APP_API_URL}/saveDraft`, {
 							method	: 'POST',
 							body	: JSON.stringify(this.state.form),
 							headers	: {	'Content-Type': 'application/json'}

@@ -17,7 +17,11 @@ export default class Posts extends React.Component {
 	}
 
 	componentDidMount() {
-		fetch(`${process.env.REACT_APP_API_URL}/blog/api/admin/getEditList`)
+
+		console.log(`${process.env.REACT_APP_API_URL}/getEditList`)
+
+
+		fetch(`${process.env.REACT_APP_API_URL}/getEditList`)
 			.then(res => res.json())
 			.then(
 				result => {
@@ -27,6 +31,7 @@ export default class Posts extends React.Component {
 					})
 				},
 				error => {
+					console.log(error)
 					this.setState({
 						isLoaded	: false,
 						error
