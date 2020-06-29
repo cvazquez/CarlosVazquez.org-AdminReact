@@ -46,9 +46,6 @@ export default function App() {
 					<Route exact path="/posts">
 						<Posts />
 					</Route>
-					{/* <Route exact path="/posts/edit">
-						<Posts />
-					</Route> */}
 					<Route exact	path="/posts/edit/:id"
 									component={Edit} />
 					<Route path="/posts/add">
