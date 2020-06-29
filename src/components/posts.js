@@ -1,7 +1,6 @@
 
 import React from 'react';
-import { Route, Link } from 'react-router-dom'
-import Edit from './edit';
+import { Link } from 'react-router-dom'
 
 export default class Posts extends React.Component {
 	constructor(props) {
@@ -12,16 +11,10 @@ export default class Posts extends React.Component {
 			isLoaded	: false,
 			entries		: []
 		};
-
-		this.handleEditClick = this.handleEditClick.bind(this);
 	}
 
 	componentDidMount() {
-
-		console.log(`${process.env.REACT_APP_API_URL}/getEditList`)
-
-
-		fetch(`${process.env.REACT_APP_API_URL}/getEditList`)
+		fetch(`${process.env.REACT_APP_API_URL}/getPosts`)
 			.then(res => res.json())
 			.then(
 				result => {
@@ -31,7 +24,6 @@ export default class Posts extends React.Component {
 					})
 				},
 				error => {
-					console.log(error)
 					this.setState({
 						isLoaded	: false,
 						error
@@ -40,24 +32,7 @@ export default class Posts extends React.Component {
 			)
 	}
 
-	edit() {
-		return (
-			<Route path="/posts/edit/:id" component={Edit} />
-		)
-	}
-
-	add() {
-		return (
-			<Route	path		= "/posts/add"
-					component	= {Edit} />
-		)
-	}
-
-	handleEditClick() {
-		document.getElementById("posts").style.display = "none";
-	}
-
-	list() {
+	render = () => {
 		const {error, isLoaded, entries} = this.state;
 
 		if (error) {
@@ -78,7 +53,8 @@ export default class Posts extends React.Component {
 								<div>{entry.id}</div>
 								<div>{entry.title}</div>
 								<div>Delete&nbsp;
-									<Link to={`/posts/edit/${entry.id}`} onClick={this.handleEditClick} key={`Entry${entry.id}`}>Edit</Link>
+									<Link	to	= {`/posts/edit/${entry.id}`}
+											key	= {`Entry${entry.id}`}>Edit</Link>
 								</div>
 								<div>{entry.createdAt}</div>
 								<div>{entry.publishAt}</div>
@@ -89,11 +65,4 @@ export default class Posts extends React.Component {
 			)
 		}
 	}
-
-	render = () =>
-		(<div>
-			{!RegExp(/edit|add/).test(document.location.pathname) && this.list()}
-			{document.location.pathname.indexOf("edit") > -1 && this.edit()}
-			{document.location.pathname.indexOf("add") > -1 && this.add()}
-		</div>)
 }

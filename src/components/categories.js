@@ -180,7 +180,7 @@ export default class Categories extends React.Component {
 					<div>
 
 					</div>
-					<div className="categories">
+					<div className="lists">
 						<form action="POST" onSubmit={this.handleNewCategorySubmit}>
 							<input	className	= "category"
 									type		= "text"

@@ -6,7 +6,11 @@ import {
 	Link
   } from "react-router-dom";
 import Posts from './components/posts';
+import Edit from './components/edit';
 import Categories from './components/categories'
+import Series from './components/series'
+import SeriesManager from './components/series_manager'
+
 
 function handlePostsClick() {
 	if(document.getElementById("posts")) document.getElementById("posts").style.display = 'grid';
@@ -29,6 +33,9 @@ export default function App() {
 					<li>
 						<Link to="/categories">Categories</Link>
 					</li>
+					<li>
+						<Link to="/series">Series</Link>
+					</li>
 				</ul>
 
 				<hr />
@@ -39,15 +46,22 @@ export default function App() {
 					<Route exact path="/posts">
 						<Posts />
 					</Route>
-					<Route path="/posts/edit">
+					{/* <Route exact path="/posts/edit">
 						<Posts />
-					</Route>
+					</Route> */}
+					<Route exact	path="/posts/edit/:id"
+									component={Edit} />
 					<Route path="/posts/add">
-						<Posts />
+						<Edit />
 					</Route>
 					<Route path="/categories">
 						<Categories />
 					</Route>
+					<Route exact path="/series">
+						<Series />
+					</Route>
+					<Route exact	path		= "/series/:id"
+									component	= {SeriesManager} />
 				</Switch>
 			</div>
 		</Router>

@@ -4,12 +4,27 @@ import { Redirect } from 'react-router-dom'
 
 export default class Edit extends React.Component {
 	constructor(props) {
-		const date = new Date();
-
 		super(props);
 
-		this.state = {
-			id						: props.match.params.id,
+		this.state = this.initState();
+
+		//this.setPublishAtDate();
+
+		this.handleEditorChange			= this.handleEditorChange.bind(this);
+		this.handleTextUpdate 			= this.handleTextUpdate.bind(this);
+		this.handleSaveDraft			= this.handleSaveDraft.bind(this);
+		this.handleSubmit 				= this.handleSubmit.bind(this);
+		this.handleCategoryInput 		= this.handleCategoryInput.bind(this);
+		this.handleCategoryClick 		= this.handleCategoryClick.bind(this);
+		this.handleCategoryClickRemove 	= this.handleCategoryClickRemove.bind(this);
+		this.handleSearchResultsClose 	= this.handleSearchResultsClose.bind(this);
+	}
+
+	initState() {
+		const date = new Date();
+
+		return {
+			id						: this.props.match ? this.props.match.params.id : null,
 			error					: null,
 			isLoaded				: false,
 			categories				: null,
@@ -39,17 +54,6 @@ export default class Edit extends React.Component {
 			saveStatus						: null,
 			redirect						: null
 		};
-
-		//this.setPublishAtDate();
-
-		this.handleEditorChange			= this.handleEditorChange.bind(this);
-		this.handleTextUpdate 			= this.handleTextUpdate.bind(this);
-		this.handleSaveDraft			= this.handleSaveDraft.bind(this);
-		this.handleSubmit 				= this.handleSubmit.bind(this);
-		this.handleCategoryInput 		= this.handleCategoryInput.bind(this);
-		this.handleCategoryClick 		= this.handleCategoryClick.bind(this);
-		this.handleCategoryClickRemove 	= this.handleCategoryClickRemove.bind(this);
-		this.handleSearchResultsClose 	= this.handleSearchResultsClose.bind(this);
 	}
 
 	getPost() {
@@ -101,11 +105,13 @@ export default class Edit extends React.Component {
 							publishMinute			: publishDate.getMinutes(),
 							entryId					: post.id,
 						// this breaks typing in the field ???	categoryName			: "",
-							categoryNamesSelected	: categoryNamesSelected
+							categoryNamesSelected	: categoryNamesSelected,
+							postSeriesSelected		: result.postSeries
 						},
 						categoryNamesSelectedDisplay	: categoryNamesSelectedDisplay,
 						categoriesSelectedLowerCased	: categoryNamesSelectedLowerCased,
-						postCategories					: result.postCategories
+						postCategories					: result.postCategories,
+						series							: result.series
 					});
 				},
 				error => {
@@ -151,15 +157,20 @@ export default class Edit extends React.Component {
 		if(this.state.id) {
 			this.getPost();
 		} else {
+			// New Page refresh
 			this.getCategories();
 		}
 	}
 
 	componentDidUpdate(prevProps) {
-		if(this.props.match.params.id !== prevProps.match.params.id) {
+		if(this.props.match && this.props.match.params.id !== prevProps.match.params.id) {
 			this.setState({
 				id : this.props.match.params.id
 			});
+		}  else if(Object.keys(this.props).length === 0 && Object.keys(prevProps).length !== 0) {
+			// New state change (from edit)
+			this.setState(this.initState());
+			this.getCategories();
 		}
 	}
 

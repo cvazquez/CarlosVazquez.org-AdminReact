@@ -1,8 +1,18 @@
 :root {
 	--color-white: #FFFFFF;
 	--color-white-smoke: #F1F1F1;
+	--color-black: black;
+	--color-grape: #43414e;
+	--color-midgrey: #686a6f;
+	--color-san-marino: #536DA7;
 
 	--background-color-hover: var(--color-white-smoke);
+
+	--a-hover-color: var(--color-black);
+	--a-hover-underline-color: var(--color-grape);
+	--a-visited: var(--color-midgrey);
+	--a-link: var(--color-midgrey);
+	--a-link-color: var(--color-san-marino);
   }
 
 body {
@@ -199,8 +209,8 @@ ul.category-names-selected li span.close:hover {
 }
 
 
-/***********  Categories Admin *********/
-.categories input {
+/***********  Categories / Series Admin *********/
+.lists input {
 	min-width: 300px;
 	max-width: 400px;
 	padding: 10px;
@@ -209,12 +219,12 @@ ul.category-names-selected li span.close:hover {
 	border-radius: 10px;
 }
 
-.categories input:hover {
+.lists input:hover {
 	cursor: pointer;
 	background-color: var(--background-color-hover);
 }
 
-.categories button {
+.lists button {
 	width: 50px;
 	padding: 10px;
 	margin: 10px;
@@ -222,12 +232,16 @@ ul.category-names-selected li span.close:hover {
 	border-radius: 10px;
 }
 
-.categories .blink {
+.lists button:hover {
+	cursor: pointer;
+}
+
+.lists .blink {
 	-webkit-animation: 2s linear infinite condemned_blink_effect; /* for Safari 4.0 - 8.0 */
 	animation: 1s linear infinite condemned_blink_effect;
 }
 
-.categories .category.saved {
+.lists .category.saved {
 	background-color: #eef108;
 }
 
@@ -241,4 +255,14 @@ ul.category-names-selected li span.close:hover {
 	100% {
 	  visibility: visible;
 	}
+  }
+
+  .series-manage-click {
+	color: var(--a-link);
+  }
+
+  .series-manage-click:hover {
+	  cursor: pointer;
+	  color: var(--a-hover-color);
+	  border-bottom: 1px solid var(--a-hover-underline-color);
   }
