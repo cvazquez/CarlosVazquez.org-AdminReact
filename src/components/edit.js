@@ -6,9 +6,8 @@ export default class Edit extends React.Component {
 	constructor(props) {
 		super(props);
 
+		this.intervalCountDown = 5;
 		this.state = this.initState();
-
-		//this.setPublishAtDate();
 
 		this.handleEditorChange			= this.handleEditorChange.bind(this);
 		this.handleTextUpdate 			= this.handleTextUpdate.bind(this);
@@ -18,6 +17,8 @@ export default class Edit extends React.Component {
 		this.handleCategoryClick 		= this.handleCategoryClick.bind(this);
 		this.handleCategoryClickRemove 	= this.handleCategoryClickRemove.bind(this);
 		this.handleSearchResultsClose 	= this.handleSearchResultsClose.bind(this);
+		this.handleSeriesClickRemove	= this.handleSeriesClickRemove.bind(this);
+		this.handleSeriesSelection		= this.handleSeriesSelection.bind(this);
 	}
 
 	initState() {
@@ -43,7 +44,9 @@ export default class Edit extends React.Component {
 				publishMinute			: date.getMinutes(),
 				categoryName			: "",
 				categoryNamesSelected 	: [],
-				entryId					: null
+				entryId					: null,
+				seriesNameSelected		: [],
+				postSeriesSelected		: []
 			},
 			categoryNamesSelectedDisplay	: [],
 			categoriesSelectedLowerCased	: [],
@@ -52,7 +55,12 @@ export default class Edit extends React.Component {
 			deletedCategories				: false,
 			savedCategories					: false,
 			saveStatus						: null,
-			redirect						: null
+			redirect						: null,
+			redirectCountDown				: this.intervalCountDown,
+			series							: [],
+			seriesByName					: {},
+			seriesById						: [],
+			seriesSelectedDisplay			: []
 		};
 	}
 
@@ -61,13 +69,17 @@ export default class Edit extends React.Component {
 			.then(res => res.json())
 			.then(
 				result => {
-					const 	post = result.post[0],
-							publishDate = new Date(post.publishAt),
-							categoriesByName = {},
-							categoriesById	= [],
-							categoryNamesSelected = [],
+					const 	post 							= result.post[0],
+							publishDate 					= new Date(post.publishAt),
+							categoriesByName 				= {},
+							categoriesById					= [],
+							categoryNamesSelected 			= [],
 							categoryNamesSelectedLowerCased = [],
-							categoryNamesSelectedDisplay = [];
+							categoryNamesSelectedDisplay	= [],
+							seriesByName					= {},
+							seriesById						= [],
+							seriesNameSelected				= [],
+							seriesSelectedDisplay			= [];
 
 					result.categories.forEach(item => {
 						categoriesByName[item.name.toLowerCase()] = item.id;
@@ -83,6 +95,22 @@ export default class Edit extends React.Component {
 								{postCategory.name}
 								<span className="close" data-name={postCategory.name} onClick={this.handleCategoryClickRemove}>x</span>
 							</li>);
+					});
+
+					result.series.forEach(item => {
+						seriesByName[item.name.toLowerCase()] = item.id;
+						seriesById[item.id] = item.name; // don't change case. Displays in series search overlay results
+					});
+
+					result.postSeries.forEach(series => {
+						seriesNameSelected.push(series.name);
+
+						seriesSelectedDisplay.push(
+							<li key={series.id}>
+								{series.name}
+								<span className="close" data-name={series.name} onClick={this.handleSeriesClickRemove}>x</span>
+							</li>
+						);
 					});
 
 					this.setState({
@@ -105,13 +133,17 @@ export default class Edit extends React.Component {
 							publishMinute			: publishDate.getMinutes(),
 							entryId					: post.id,
 						// this breaks typing in the field ???	categoryName			: "",
-							categoryNamesSelected	: categoryNamesSelected,
+							categoryNamesSelected,
+							seriesNameSelected,
 							postSeriesSelected		: result.postSeries
 						},
 						categoryNamesSelectedDisplay	: categoryNamesSelectedDisplay,
 						categoriesSelectedLowerCased	: categoryNamesSelectedLowerCased,
 						postCategories					: result.postCategories,
-						series							: result.series
+						series							: result.series,
+						seriesByName,
+						seriesById,
+						seriesSelectedDisplay
 					});
 				},
 				error => {
@@ -153,17 +185,48 @@ export default class Edit extends React.Component {
 			)
 	}
 
+	getSeries() {
+		fetch(`${process.env.REACT_APP_API_URL}/getSeries`)
+			.then(res => res.json())
+			.then(
+				result => {
+					const	seriesByName					= {},
+							seriesById						= [];
+
+					result.series.forEach(item => {
+						seriesByName[item.name.toLowerCase()] = item.id;
+						seriesById[item.id] = item.name; // don't change case. Displays in series search overlay results
+					});
+
+					this.setState({
+						isLoaded	: true,
+						series		: result.series,
+						seriesByName,
+						seriesById
+					});
+				},
+				error => {
+					this.setState({
+						isLoaded	: false,
+						error
+					})
+				}
+			)
+	}
+
 	componentDidMount() {
 		if(this.state.id) {
 			this.getPost();
 		} else {
 			// New Page refresh
 			this.getCategories();
+			this.getSeries();
+			this.setPublishAtDate();
 		}
 	}
 
 	componentDidUpdate(prevProps) {
-		if(this.props.match && this.props.match.params.id !== prevProps.match.params.id) {
+		if(this.props.match && prevProps.match && this.props.match.params.id !== prevProps.match.params.id) {
 			this.setState({
 				id : this.props.match.params.id
 			});
@@ -171,6 +234,8 @@ export default class Edit extends React.Component {
 			// New state change (from edit)
 			this.setState(this.initState());
 			this.getCategories();
+			this.getSeries();
+			this.setPublishAtDate();
 		}
 	}
 
@@ -240,7 +305,32 @@ export default class Edit extends React.Component {
 		}
 
 		this.setState({
-			categoryNamesSelectedDisplay : categoryNamesSelectedDisplay,
+			categoryNamesSelectedDisplay,
+			form
+		})
+	}
+
+	handleSeriesClickRemove(event) {
+		const	form = this.state.form,
+				seriesSelectedDisplay = [],
+				seriesSelected = form.seriesNameSelected;
+
+		form.seriesNameSelected = seriesSelected.filter(series => series !== event.currentTarget.dataset.name);
+
+		if(form.seriesNameSelected.length) {
+			for(let index in form.seriesNameSelected) {
+				seriesSelectedDisplay.push(
+					<li key={form.seriesNameSelected[index]}>
+						{form.seriesNameSelected[index]}
+						<span	className	= "close"
+								data-name	= {form.seriesNameSelected[index]}
+								onClick		= {this.handleSeriesClickRemove}>x</span>
+					</li>);
+			}
+		}
+
+		this.setState({
+			seriesSelectedDisplay,
 			form
 		})
 	}
@@ -319,15 +409,40 @@ export default class Edit extends React.Component {
 		});
 	}
 
-	handleSubmit(event) {
-		let action;
-		event.preventDefault();
+	handleSeriesSelection(e) {
+		let state 					= this.state,
+			seriesSelectedDisplay 	= state.seriesSelectedDisplay,
+			form					= state.form,
+			id						= e.target.value,
+			name					= state.seriesById[id];
 
-		if(this.state.id) {
-			action = "updatePost";
-		} else {
-			action = "addPost";
-		}
+		seriesSelectedDisplay.push(
+			<li key={id}>
+				{name}
+				<span className="close" data-name={name} onClick={this.handleSeriesClickRemove}>x</span>
+			</li>
+		);
+
+		form.postSeriesSelected.push({
+			id, name
+		})
+
+		form.seriesNameSelected.push(name);
+
+		this.setState({
+			seriesSelectedDisplay,
+			form
+		});
+	}
+
+	redirectCountDown() {
+
+	}
+
+	handleSubmit(event) {
+		let action = this.state.id ? "updatePost" : "addPost";
+
+		event.preventDefault();
 
 		// Save comment to database
 		fetch(`${process.env.REACT_APP_API_URL}/${action}`, {
@@ -344,14 +459,15 @@ export default class Edit extends React.Component {
 								this.setState({
 									id				: postAdded ? json.savePost.insertId : this.state.id,
 									updatePosted	: true,
-									saveStatus		: <div className="alert alert-success">Post Successfully Saved{postAdded ? "...Redirecting in 5 Seconds" : ""}</div>
+									saveStatus		:	<div className="alert alert-success">
+															Post Successfully Saved{postAdded ? "...Redirecting in 5 Seconds" : ""}
+														</div>
 								});
 
 								setTimeout(()=>{
 									this.setState({saveStatus	: null,
 													redirect	: postAdded ? `/posts/edit/${json.savePost.insertId}` : null
 												});
-
 								}, 5000);
 							} else {
 								this.setState({
@@ -407,9 +523,12 @@ export default class Edit extends React.Component {
 							handleSubmit					= {this.handleSubmit}
 							handleEditorChange				= {this.handleEditorChange}
 							handleSaveDraft					= {this.handleSaveDraft}
+							handleSeriesSelection			= {this.handleSeriesSelection}
 							saveStatus						= {this.state.saveStatus}
 							categoryOverlay					= {this.state.categoryOverlay}
-							categoryNamesSelectedDisplay	= {this.state.categoryNamesSelectedDisplay} />
+							categoryNamesSelectedDisplay	= {this.state.categoryNamesSelectedDisplay}
+							series							= {this.state.series}
+							seriesSelectedDisplay			= {this.state.seriesSelectedDisplay} />
 			)
 		}
 	}

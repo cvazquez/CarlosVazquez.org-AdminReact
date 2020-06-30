@@ -12,10 +12,6 @@ import Series from './components/series'
 import SeriesManager from './components/series_manager'
 
 
-function handlePostsClick() {
-	if(document.getElementById("posts")) document.getElementById("posts").style.display = 'grid';
-}
-
 export default function App() {
   return (
 		<Router>
@@ -25,10 +21,10 @@ export default function App() {
 						<Link to="/">Home</Link>
 					</li>
 					<li>
-						<Link to="/posts" onClick={handlePostsClick}>Posts</Link>
+						<Link to="/posts">Posts</Link>
 					</li>
 					<li>
-						<Link to="/posts/add" onClick={handlePostsClick}>Add</Link>
+						<Link to="/posts/add">Add</Link>
 					</li>
 					<li>
 						<Link to="/categories">Categories</Link>

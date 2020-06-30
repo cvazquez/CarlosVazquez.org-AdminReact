@@ -93,10 +93,25 @@ export default class Form extends React.Component {
 								autoComplete = "off"
 								name		= "categories"
 								placeholder	= "Start Typing a Category"
-								value		= {this.props.form.categoryName}
+								value		= {form.categoryName}
 								onChange	= {this.props.handleCategoryInput} />
 						<div>{this.props.categoryOverlay}</div>
 						<ul className="category-names-selected">{this.props.categoryNamesSelectedDisplay}</ul>
+
+						<select name		= "series"
+								value		= {form.seriesId}
+								onChange	= {this.props.handleSeriesSelection}>
+								<option value="">-- Add to a Series --</option>
+							{this.props.series.map(series => (
+								<option key		= {series.id}
+										value	= {series.id}>
+										{series.name}
+								</option>
+							))}
+						</select>
+						<ul className="series-names-selected">
+							{this.props.seriesSelectedDisplay}
+						</ul>
 					</div>
 
 					<div className="editor">

@@ -78,6 +78,10 @@ ul.header li {
 	margin: 0px 10px 10px 0px;
 }
 
+.edit select[name=series] {
+	width: 50%;
+}
+
 .editor {
 	margin: 0px 0px 25px 0px;
 }
@@ -184,27 +188,31 @@ input[name="submitPost"] {
 
 /****** Category Names Selected ******/
 
-ul.category-names-selected {
+ul.category-names-selected,
+ul.series-names-selected {
 	list-style-type	: none;
 	margin-top		: 0px;
 	margin-left		: -25px;
 	width			: 25%;
 }
 
-ul.category-names-selected li {
+ul.category-names-selected li,
+ul.series-names-selected li {
 	padding: 5px;
 	border: 1px solid silver;
 	border-radius: 5px;
 	margin-bottom: 5px;
 }
 
-ul.category-names-selected li span.close {
+ul.category-names-selected li span.close,
+ul.series-names-selected li span.close {
 	float: right;
 	display: block;
 	margin-right: 2%;
 }
 
-ul.category-names-selected li span.close:hover {
+ul.category-names-selected li span.close:hover,
+ul.series-names-selected li span.close:hover {
 	cursor: pointer;
 }
 
