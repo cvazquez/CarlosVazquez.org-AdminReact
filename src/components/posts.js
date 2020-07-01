@@ -41,7 +41,7 @@ export default class Posts extends React.Component {
 			return <div>Loading...</div>;
 		  } else {
 			return (
-					<div className="grid-container posts" id="posts">
+					<div className="grid-container posts">
 						<div>Id</div>
 						<div>Title</div>
 						<div>Actions</div>

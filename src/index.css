@@ -274,3 +274,24 @@ ul.series-names-selected li span.close:hover {
 	  color: var(--a-hover-color);
 	  border-bottom: 1px solid var(--a-hover-underline-color);
   }
+
+/********** Series Sequences ********/
+.series-manager {
+	margin: 0 0 0 10px;
+}
+
+.series-manager-name {
+	font-weight: bold;
+}
+
+ul.series-sequences {
+	list-style: none;
+}
+
+ul.series-sequences li {
+	padding: 5px;
+}
+
+ul.series-sequences li a {
+	padding: 10px;
+}
