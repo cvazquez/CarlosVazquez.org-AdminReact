@@ -443,8 +443,6 @@ export default class Edit extends React.Component {
 
 		event.preventDefault();
 
-		console.log(this.state.form)
-
 		// Save comment to database
 		fetch(`${process.env.REACT_APP_API_URL}/${action}`, {
 							method	: 'POST',
