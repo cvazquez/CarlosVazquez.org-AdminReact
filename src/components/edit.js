@@ -275,17 +275,16 @@ export default class Edit extends React.Component {
 
 	handleTextUpdate(event) {
 		const	form				= this.state.form,
-				fieldName			= event.target.name,
-				publishDateFields	= ["publishYear", "publishMonth", "publishDay",	"publishHour", "publishMinute"];
+				fieldName			= event.target.name;
 
 		form[fieldName] = event.target.value;
 
-		if(publishDateFields.indexOf(fieldName) > -1) {
-			form.publishAt = this.setPublishAtDate();
-		} else {
-			this.setState({
-				form
-			});
+		this.setState({
+			form
+		});
+
+		if(["publishYear", "publishMonth", "publishDay",	"publishHour", "publishMinute"].indexOf(fieldName) > -1) {
+			this.setPublishAtDate();
 		}
 	}
 
@@ -443,6 +442,8 @@ export default class Edit extends React.Component {
 		let action = this.state.id ? "updatePost" : "addPost";
 
 		event.preventDefault();
+
+		console.log(this.state.form)
 
 		// Save comment to database
 		fetch(`${process.env.REACT_APP_API_URL}/${action}`, {
