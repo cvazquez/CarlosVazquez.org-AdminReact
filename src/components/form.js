@@ -112,7 +112,18 @@ export default class Form extends React.Component {
 						<ul className="series-names-selected">
 							{this.props.seriesSelectedDisplay}
 						</ul>
-					</div>
+
+						<select name		= "flickrSetId"
+								value		= {form.flickrSetId}
+								onChange	= {this.props.handleTextUpdate}>
+								<option value="">-- Attach To A Flickr Set --</option>
+							{form.flickrSets.map(flickrSet => (
+								<option key		= {flickrSet.id}
+										value	= {flickrSet.id}>
+										{flickrSet.title}
+								</option>
+							))}
+						</select>					</div>
 
 					<div className="editor">
 						<Editor

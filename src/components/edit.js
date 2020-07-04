@@ -46,7 +46,9 @@ export default class Edit extends React.Component {
 				categoryNamesSelected 	: [],
 				entryId					: null,
 				seriesNameSelected		: [],
-				postSeriesSelected		: []
+				postSeriesSelected		: [],
+				flickrSets				: [],
+				flickrSetId				: ""
 			},
 			categoryNamesSelectedDisplay	: [],
 			categoriesSelectedLowerCased	: [],
@@ -54,13 +56,15 @@ export default class Edit extends React.Component {
 			updatePosted 					: false,
 			deletedCategories				: false,
 			savedCategories					: false,
+			savePostFlickrSet				: false,
 			saveStatus						: null,
 			redirect						: null,
 			redirectCountDown				: this.intervalCountDown,
 			series							: [],
 			seriesByName					: {},
 			seriesById						: [],
-			seriesSelectedDisplay			: []
+			seriesSelectedDisplay			: [],
+			flickrSets						: []
 		};
 	}
 
@@ -135,7 +139,9 @@ export default class Edit extends React.Component {
 						// this breaks typing in the field ???	categoryName			: "",
 							categoryNamesSelected,
 							seriesNameSelected,
-							postSeriesSelected		: result.postSeries
+							postSeriesSelected		: result.postSeries,
+							flickrSets				: result.flickrSets,
+							flickrSetId				: typeof(post.flickrSetId) === "undefined" || post.flickrSetId === null ? "" : post.flickrSetId
 						},
 						categoryNamesSelectedDisplay	: categoryNamesSelectedDisplay,
 						categoriesSelectedLowerCased	: categoryNamesSelectedLowerCased,
@@ -214,13 +220,56 @@ export default class Edit extends React.Component {
 			)
 	}
 
+	getNewPost() {
+		fetch(`${process.env.REACT_APP_API_URL}/getNewPost`)
+			.then(res => res.json())
+			.then(
+				result => {
+					const	seriesByName		= {},
+							seriesById			= [],
+							categoriesByName	= {},
+							categoriesById		= [],
+							form				= this.state.form;
+
+					result.series.forEach(item => {
+						seriesByName[item.name.toLowerCase()] = item.id;
+						seriesById[item.id] = item.name; // don't change case. Displays in series search overlay results
+					});
+
+					result.categories.forEach(item => {
+						categoriesByName[item.name.toLowerCase()] = item.id;
+						categoriesById[item.id] = item.name; // don't change case. Displays in category search overlay results
+					});
+
+					form.flickrSets = result.flickrSets;
+
+					this.setState({
+						isLoaded			: true,
+						series				: result.series,
+						seriesByName,
+						seriesById,
+						categories			: result.categories,
+						categoriesByName	: categoriesByName,
+						categoriesById		: categoriesById,
+						categoryOverlay		: null,
+						form
+					});
+				},
+				error => {
+					this.setState({
+						isLoaded	: false,
+						error
+					})
+				}
+			)
+	}
+
 	componentDidMount() {
 		if(this.state.id) {
 			this.getPost();
 		} else {
 			// New Page refresh
-			this.getCategories();
-			this.getSeries();
+			this.getNewPost();
 			this.setPublishAtDate();
 		}
 	}
@@ -233,8 +282,7 @@ export default class Edit extends React.Component {
 		}  else if(Object.keys(this.props).length === 0 && Object.keys(prevProps).length !== 0) {
 			// New state change (from edit)
 			this.setState(this.initState());
-			this.getCategories();
-			this.getSeries();
+			this.getNewPost();
 			this.setPublishAtDate();
 		}
 	}
@@ -463,7 +511,7 @@ export default class Edit extends React.Component {
 														</div>
 								});
 
-								setTimeout(()=>{
+								setTimeout(() => {
 									this.setState({saveStatus	: null,
 													redirect	: postAdded ? `/posts/edit/${json.savePost.insertId}` : null
 												});
@@ -484,6 +532,11 @@ export default class Edit extends React.Component {
 								this.setState({
 									savedCategories	: true
 								});
+
+							(json.savePostFlickrSet && json.savePostFlickrSet.affectedRows && json.savePostFlickrSet.affectedRows > 0) &&
+							this.setState({
+								savePostFlickrSet	: true
+							});
 						});
 	}
 
@@ -507,7 +560,12 @@ export default class Edit extends React.Component {
 		const {error, isLoaded, form} = this.state;
 
 		if(this.state.redirect) {
-			return <Redirect to={this.state.redirect} />
+			return <Redirect to={{
+				pathname	: this.state.redirect,
+				state		: {
+					id	: this.state.id
+				}
+			}} />
 		}
 
 		if (error) {

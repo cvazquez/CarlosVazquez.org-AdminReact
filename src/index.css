@@ -78,7 +78,8 @@ ul.header li {
 	margin: 0px 10px 10px 0px;
 }
 
-.edit select[name=series] {
+.edit select[name=series],
+.edit select[name=flickrSetId] {
 	width: 50%;
 }
 
