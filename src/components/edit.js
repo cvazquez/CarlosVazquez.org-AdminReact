@@ -1,6 +1,5 @@
 import React from "react";
 import Form from "./form";
-import { Redirect } from 'react-router-dom'
 
 export default class Edit extends React.Component {
 	constructor(props) {
@@ -58,7 +57,6 @@ export default class Edit extends React.Component {
 			savedCategories					: false,
 			savePostFlickrSet				: false,
 			saveStatus						: null,
-			redirect						: null,
 			redirectCountDown				: this.intervalCountDown,
 			series							: [],
 			seriesByName					: {},
@@ -482,8 +480,10 @@ export default class Edit extends React.Component {
 		});
 	}
 
-	redirectCountDown() {
-
+	getAlertSaveStatus(postAdded) {
+		return <div className="alert alert-success">
+					Post Successfully Saved{postAdded ? `...Redirecting in ${this.state.redirectCountDown} Seconds` : ""}
+				</div>
 	}
 
 	handleSubmit(event) {
@@ -506,20 +506,33 @@ export default class Edit extends React.Component {
 								this.setState({
 									id				: postAdded ? json.savePost.insertId : this.state.id,
 									updatePosted	: true,
-									saveStatus		:	<div className="alert alert-success">
-															Post Successfully Saved{postAdded ? "...Redirecting in 5 Seconds" : ""}
-														</div>
+									saveStatus		: this.getAlertSaveStatus(postAdded)
+
 								});
 
-								setTimeout(() => {
-									this.setState({saveStatus	: null,
-													redirect	: postAdded ? `/posts/edit/${json.savePost.insertId}` : null
-												});
-								}, 5000);
+								if(postAdded) {
+									setInterval(() => {
+										this.setState({redirectCountDown : this.state.redirectCountDown - 1});
+
+										this.setState({
+											saveStatus : this.getAlertSaveStatus(true)
+										})
+									}, 1000);
+
+									setTimeout(() => {
+										document.location.href = `/posts/edit/${json.savePost.insertId}`;
+									}, 5000);
+								}
+
 							} else {
+								if(json.savePost && json.savePost.message && json.savePost.message.length)
 								this.setState({
 									updatePosted	: false,
-									saveStatus		: <div className="alert alert-danger">Error Saving Post</div>
+									saveStatus		: 	<div className="alert alert-danger">Error Saving Post.
+															{	json.savePost && json.savePost.message && json.savePost.message.length ?
+																	" " + json.savePost.message : " Unknown Error."
+															}
+														</div>
 								});
 							}
 
@@ -558,15 +571,6 @@ export default class Edit extends React.Component {
 
 	post() {
 		const {error, isLoaded, form} = this.state;
-
-		if(this.state.redirect) {
-			return <Redirect to={{
-				pathname	: this.state.redirect,
-				state		: {
-					id	: this.state.id
-				}
-			}} />
-		}
 
 		if (error) {
 			return <div>Error: {error.message}</div>;
