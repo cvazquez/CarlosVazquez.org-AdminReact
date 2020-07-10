@@ -14,8 +14,7 @@ import SeriesManager from './components/series_manager'
 
 export default function App() {
   return (
-		<Router>
-			<div>
+			<Router>
 				<ul className="header">
 					<li>
 						<Link to="/">Home</Link>
@@ -56,7 +55,6 @@ export default function App() {
 					<Route exact	path		= "/series/:id"
 									component	= {SeriesManager} />
 				</Switch>
-			</div>
-		</Router>
+			</Router>
 	);
 }

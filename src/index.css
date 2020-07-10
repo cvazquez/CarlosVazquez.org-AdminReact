@@ -5,8 +5,18 @@
 	--color-grape: #43414e;
 	--color-midgrey: #686a6f;
 	--color-san-marino: #536DA7;
+	--color-gray-smoke: #e9e9e9;
+	--color-silver: silver;
+	--color-lemon: #eef108;
 
 	--background-color-hover: var(--color-white-smoke);
+	--border-color: var(--color-silver);
+	--lightbox-color: floralwhite;
+	--save-confirmation-color: var(--color-lemon);
+
+	--header-background-color: gray;
+	--header-text-color: white;
+	--row-alternating-color: var(--color-silver);
 
 	--a-hover-color: var(--color-black);
 	--a-hover-underline-color: var(--color-grape);
@@ -43,25 +53,115 @@ ul.header li {
 	margin: 0px 10px;
 }
 
+ul.header li a {
+	text-decoration: none;
+	color: var(--a-link-color);
+}
+
+ul.header li a:hover {
+	color: var(--a-hover-color);
+	border-bottom: 1px solid var(--a-hover-underline-color);
+}
 
 /******** List of Posts *******/
 
 .grid-container {
 	display: grid;
-	grid-template-columns: auto auto auto auto auto auto;
+	grid-template-columns: 5% 35% 15% 15% 15% 15%;
 }
 
 .grid-container > div {
 	text-align: left;
-	padding: 10px;
+
 }
 
+.grid-header-wrapper, .grid-row-wrapper {
+	display: contents;
+
+}
+
+.grid-header-wrapper > div {
+	background: var(--header-background-color);
+	color: var(--header-text-color);
+	padding: 10px 0px;
+}
+
+.grid-row-wrapper > div {
+	padding: 10px 0px;
+}
+
+.grid-row-wrapper:nth-child(odd) > div {
+	background: var(--row-alternating-color);
+}
+
+.grid-container.posts .delete,
+.grid-container.posts .edit {
+	cursor: pointer;
+	color: var(--a-link-color);
+	text-decoration: none;
+	display: inline;
+}
+
+.grid-container.posts .delete:hover,
+.grid-container.posts .edit:hover {
+	color: var(--a-hover-color);
+	border-bottom: 1px solid var(--a-hover-underline-color);
+}
+
+/******** Delete Overlay *********/
+.overlay {
+	display: block;
+	background: var(--color-gray-smoke);
+	opacity: .5;
+	position: absolute;
+	top: 0;
+	right: 0;
+	left: 0;
+	height: 100%;
+	z-index: 10;
+}
+
+.lightbox {
+	position		: fixed;
+	top				: 25%;
+	left			: 25%;
+	width			: 50%;
+	height			: 50%;
+	background		: var(--lightbox-color);
+	border			: 1px solid var(--border-color);
+	border-radius	: 10px;
+}
+
+.close-x {
+	margin-left: 10px;
+	font-size: 1.75rem;
+	cursor: pointer;
+}
+
+.hidden {
+	display: none;
+}
+
+.deactivation-confirmation {
+	vertical-align: middle;
+    text-align: center;
+    top: 25%;
+	position: relative;
+	font-weight: bold;
+}
+
+.deactivation-buttons {
+	margin-top: 15px;
+}
+.deactivation-buttons button{
+	margin: 10px;
+}
 
 /******** Editor ********/
 
 .edit {
 	text-align: left;
-	margin: 50px 0px 0px 10%;
+	margin: 30px 0px 0px 20px;
 	width: 80%;
 }
 
@@ -129,7 +229,7 @@ input[name="submitPost"] {
 .search-results-container {
 	width: 50%;
 	background-color: var(--color-white);
-	border: 1px solid silver;
+	border: 1px solid var(--border-color);
 	border-radius: 10px;
 	z-index: 10000;
 	margin: 0px 0px 10px 0px;
@@ -162,16 +262,15 @@ input[name="submitPost"] {
 .search-results-container ul.search-results-overlay li {
 	padding: 10px 0px;
 	display: block;
-	color: black;
 	font-weight: 600;
 }
 
 .search-results-container ul.search-results-overlay li:not(:last-child) {
-	border-bottom: 1px solid silver;
+	border-bottom: 1px solid var(--border-color);
 }
 
 .search-results-container ul.search-results-overlay li:hover {
-	background-color: #F1F1F1;
+	background-color: var(--color-white-smoke);
 	cursor: pointer;
 }
 
@@ -200,7 +299,7 @@ ul.series-names-selected {
 ul.category-names-selected li,
 ul.series-names-selected li {
 	padding: 5px;
-	border: 1px solid silver;
+	border: 1px solid var(--border-color);
 	border-radius: 5px;
 	margin-bottom: 5px;
 }
@@ -224,7 +323,7 @@ ul.series-names-selected li span.close:hover {
 	max-width: 400px;
 	padding: 10px;
 	margin: 10px;
-	border: 1px solid silver;
+	border: 1px solid var(--border-color);
 	border-radius: 10px;
 }
 
@@ -237,7 +336,7 @@ ul.series-names-selected li span.close:hover {
 	width: 50px;
 	padding: 10px;
 	margin: 10px;
-	border: 1px solid silver;
+	border: 1px solid var(--border-color);
 	border-radius: 10px;
 }
 
@@ -251,7 +350,7 @@ ul.series-names-selected li span.close:hover {
 }
 
 .lists .category.saved {
-	background-color: #eef108;
+	background-color: var(--save-confirmation-color);
 }
 
 @keyframes condemned_blink_effect {

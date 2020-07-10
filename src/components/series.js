@@ -63,7 +63,7 @@ export default class Series extends React.Component {
 	}
 
 	handleTextUpdate(e) {
-		const	id				= e.currentTarget.dataset.id,
+		const	id			= e.currentTarget.dataset.id,
 				seriesById	= this.state.seriesById;
 
 		seriesById[id].name = e.target.value;
