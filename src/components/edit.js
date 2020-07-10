@@ -57,6 +57,7 @@ export default class Edit extends React.Component {
 			savedCategories					: false,
 			savePostFlickrSet				: false,
 			saveStatus						: null,
+			saveDraftStatus					: null,
 			redirectCountDown				: this.intervalCountDown,
 			series							: [],
 			seriesByName					: {},
@@ -522,6 +523,10 @@ export default class Edit extends React.Component {
 									setTimeout(() => {
 										document.location.href = `/posts/edit/${json.savePost.insertId}`;
 									}, 5000);
+								} else {
+									setTimeout(() => this.setState({
+										saveStatus	: null
+									}), 5000);
 								}
 
 							} else {
@@ -554,6 +559,11 @@ export default class Edit extends React.Component {
 	}
 
 	handleSaveDraft() {
+
+		this.setState({
+			saveDraftStatus	: <div className="alert alert-success">Saving draft...</div>
+		})
+
 		// Save draft to database
 		fetch(`${process.env.REACT_APP_API_URL}/saveDraft`, {
 							method	: 'POST',
@@ -564,8 +574,13 @@ export default class Edit extends React.Component {
 						.then(json => {
 							(json.status && json.status.affectedRows && json.status.affectedRows > 0) &&
 								this.setState({
-									updatePosted	: true
+									updatePosted	: true,
+									saveDraftStatus	: <div className="alert alert-success">Draft Saved!!!</div>
 								});
+
+								setTimeout(() => this.setState({
+									saveDraftStatus : null
+								}), 5000);
 						});
 	}
 
@@ -586,6 +601,7 @@ export default class Edit extends React.Component {
 							handleSaveDraft					= {this.handleSaveDraft}
 							handleSeriesSelection			= {this.handleSeriesSelection}
 							saveStatus						= {this.state.saveStatus}
+							saveDraftStatus					= {this.state.saveDraftStatus}
 							categoryOverlay					= {this.state.categoryOverlay}
 							categoryNamesSelectedDisplay	= {this.state.categoryNamesSelectedDisplay}
 							series							= {this.state.series}

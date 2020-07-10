@@ -123,7 +123,10 @@ export default class Form extends React.Component {
 										{flickrSet.title}
 								</option>
 							))}
-						</select>					</div>
+						</select>
+					</div>
+
+					{this.props.saveDraftStatus}
 
 					<div className="editor">
 						<Editor
