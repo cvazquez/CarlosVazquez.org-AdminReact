@@ -11,29 +11,43 @@ import Categories from './components/categories'
 import Series from './components/series'
 import SeriesManager from './components/series_manager'
 
+export const getLinks = function getLinks() {
+	return [
+		{
+			path	: "/",
+			text	: "Home"
+		},
+		{
+			path	: "/posts",
+			text	: "Posts"
+		},
+		{
+			path	: "/posts/add",
+			text	: "Add"
+		},
+		{
+			path	: "/categories",
+			text	: "Categories"
+		},
+		{
+			path	: "/series",
+			text	: "Series"
+		},
+	]
+}
 
-export default function App() {
+const App = function App() {
+	const links = getLinks();
+
   return (
 			<Router>
 				<ul className="header">
-					<li>
-						<Link to="/">Home</Link>
-					</li>
-					<li>
-						<Link to="/posts">Posts</Link>
-					</li>
-					<li>
-						<Link to="/posts/add">Add</Link>
-					</li>
-					<li>
-						<Link to="/categories">Categories</Link>
-					</li>
-					<li>
-						<Link to="/series">Series</Link>
-					</li>
+					{links.map(link => (
+						<li key={link.text}>
+							<Link to={link.path}>{link.text}</Link>
+						</li>
+					))}
 				</ul>
-
-				<hr />
 
 				<Switch>
 					<Route exact path="/">
@@ -58,3 +72,5 @@ export default function App() {
 			</Router>
 	);
 }
+
+export default App;

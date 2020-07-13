@@ -46,6 +46,8 @@ code {
 ul.header {
 	text-align: left;
 	list-style-type: none;
+	padding-bottom: 20px;
+	border-bottom: 1px solid var(--border-color);
 }
 
 ul.header li {
