@@ -142,7 +142,7 @@ export default class Form extends React.Component {
 								toolbar	:
 									`save undo redo | formatselect | bold italic backcolor |
 									alignleft aligncenter alignright alignjustify |
-									bullist numlist outdent indent | removeformat | help`,
+									bullist numlist outdent indent | removeformat | code | help`,
 								save_onsavecallback: function () {}
 							}}
 							onEditorChange	= {this.props.handleEditorChange}

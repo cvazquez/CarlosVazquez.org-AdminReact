@@ -58,54 +58,53 @@ test('Has Post Text', () => {
   });
 
 
-  const renderWithRouter = (component) => {
-    const history = createMemoryHistory()
-    return {
-    ...render (
-    <Router history={history}>
-        {component}
-    </Router>
-    )
-  }
-}
+	const renderWithRouter = (component) => {
+		const history = createMemoryHistory()
+			return {
+				...render (
+					<Router history={history}>
+					{component}
+					</Router>
+				)
+			}
+	}
 
+	it('should render the home page', () => {
 
-it('should render the home page', () => {
+		const { container, getByTestId } = renderWithRouter(<App />)
+		const navbar = getByTestId('header')
+		const link = getByTestId('Posts')
 
-	const { container, getByTestId } = renderWithRouter(<App />)
-	const navbar = getByTestId('header')
-	const link = getByTestId('Posts')
+		expect(container.innerHTML).toMatch('Home')
+		expect(navbar).toContainElement(link)
+	})
 
-	expect(container.innerHTML).toMatch('Home')
-	expect(navbar).toContainElement(link)
-  })
+	it('should navigate to the posts page', ()=> {
+		const { container, getByTestId } = renderWithRouter(<App />)
 
+		fireEvent.click(getByTestId('Posts'))
 
-  it('should navigate to the posts page', ()=> {
-	const { container, getByTestId } = renderWithRouter(<App />)
+		expect(container.innerHTML).toMatch('Loading...')
+	})
 
-	fireEvent.click(getByTestId('Posts'))
+	it('should navigate to the posts page resolved', async () => {
+		const { getByText , getByTestId } = renderWithRouter(<App />)
 
-	expect(container.innerHTML).toMatch('Loading...')
-  })
+		fireEvent.click(getByTestId('Posts'))
 
-  it('should navigate to the posts page resolved', async () => {
-	const { getByText , getByTestId } = renderWithRouter(<App />)
+		const posts = await waitForElement(() => getByText("Title"))
 
-	fireEvent.click(getByTestId('Posts'))
+		expect(posts).toHaveTextContent('Title')
+	})
 
-	const posts = await waitForElement(() => getByText("Title"))
+	// /categories
+	it('should navigate to the categories page with the params', async ()=> {
+		const { getByTestId } = renderWithRouter(<App />)
 
-	expect(posts).toHaveTextContent('Title')
-  })
+		fireEvent.click(getByTestId('Categories'))
 
-it('should navigate to the categories page with the params', async ()=> {
-	const { getByTestId } = renderWithRouter(<App />)
+		const posts = await waitForElement(() => getByTestId("About Me"))
 
-	fireEvent.click(getByTestId('Categories'))
-
-	const posts = await waitForElement(() => getByTestId("About Me"))
-
-	expect(posts).toHaveClass('category')
-	//expect(posts).toHaveClass('value', expect.stringContaining('About'))
-  })
+		expect(posts).toHaveClass('category')
+		//expect(posts).toHaveClass('value', expect.stringContaining('About'))
+	})

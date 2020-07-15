@@ -6,6 +6,8 @@ export default class Posts extends React.Component {
 	constructor(props) {
 		super(props);
 
+		this._isMounted = false;
+
 		this.state = {
 			error		: null,
 			isLoaded	: false,
@@ -27,14 +29,14 @@ export default class Posts extends React.Component {
 			.then(res => res.json())
 			.then(
 				result => {
-					this.setState({
+					this._isMounted && this.setState({
 						isLoaded		: true,
 						entries			: result.posts,
 						activeEntries	: result.posts.filter(entry => entry.deletedAt === null)
 					})
 				},
 				error => {
-					this.setState({
+					this._isMounted && this.setState({
 						isLoaded	: false,
 						error
 					})
@@ -43,8 +45,13 @@ export default class Posts extends React.Component {
 	}
 
 	componentDidMount() {
-		this.getPosts();
+		this._isMounted = true;
+		this._isMounted && this.getPosts();
 	}
+
+	componentWillUnmount() {
+		this._isMounted = false;
+	 }
 
 	displayLightBox() {
 		const 	{overlay, deleteTitle} = this.state;
