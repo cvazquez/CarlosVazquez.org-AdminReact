@@ -149,7 +149,8 @@ export default class Posts extends React.Component {
 												className	= "delete">Deactivate </span>
 										<Link	to			= {`/posts/edit/${entry.id}`}
 												key			= {`Entry${entry.id}`}
-												className	= "edit">Edit</Link>
+												className	= "edit"
+												data-testid	= {entry.id}>Edit</Link>
 									</div>
 									<div>{entry.createdAt}</div>
 									<div>{entry.publishAt}</div>

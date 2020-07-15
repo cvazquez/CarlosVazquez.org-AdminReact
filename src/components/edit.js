@@ -5,6 +5,8 @@ export default class Edit extends React.Component {
 	constructor(props) {
 		super(props);
 
+		this._isMounted = false;
+
 		this.intervalCountDown = 5;
 		this.state = this.initState();
 
@@ -116,7 +118,7 @@ export default class Edit extends React.Component {
 						);
 					});
 
-					this.setState({
+					this._isMounted && this.setState({
 						isLoaded			: true,
 						categories			: result.categories,
 						categoriesByName	: categoriesByName,
@@ -152,7 +154,7 @@ export default class Edit extends React.Component {
 					});
 				},
 				error => {
-					this.setState({
+					this._isMounted && this.setState({
 						isLoaded	: false,
 						error
 					})
@@ -173,7 +175,7 @@ export default class Edit extends React.Component {
 						categoriesById[item.id] = item.name; // don't change case. Displays in category search overlay results
 					});
 
-					this.setState({
+					this._isMounted && this.setState({
 						isLoaded						: true,
 						categories						: result.categories,
 						categoriesByName				: categoriesByName,
@@ -182,7 +184,7 @@ export default class Edit extends React.Component {
 					});
 				},
 				error => {
-					this.setState({
+					this._isMounted && this.setState({
 						isLoaded	: false,
 						error
 					})
@@ -203,7 +205,7 @@ export default class Edit extends React.Component {
 						seriesById[item.id] = item.name; // don't change case. Displays in series search overlay results
 					});
 
-					this.setState({
+					this._isMounted && this.setState({
 						isLoaded	: true,
 						series		: result.series,
 						seriesByName,
@@ -211,7 +213,7 @@ export default class Edit extends React.Component {
 					});
 				},
 				error => {
-					this.setState({
+					this._isMounted && this.setState({
 						isLoaded	: false,
 						error
 					})
@@ -242,7 +244,7 @@ export default class Edit extends React.Component {
 
 					form.flickrSets = result.flickrSets;
 
-					this.setState({
+					this._isMounted && this.setState({
 						isLoaded			: true,
 						series				: result.series,
 						seriesByName,
@@ -255,7 +257,7 @@ export default class Edit extends React.Component {
 					});
 				},
 				error => {
-					this.setState({
+					this._isMounted && this.setState({
 						isLoaded	: false,
 						error
 					})
@@ -264,12 +266,14 @@ export default class Edit extends React.Component {
 	}
 
 	componentDidMount() {
+		this._isMounted = true;
+
 		if(this.state.id) {
-			this.getPost();
+			this._isMounted && this.getPost();
 		} else {
 			// New Page refresh
-			this.getNewPost();
-			this.setPublishAtDate();
+			this._isMounted && this.getNewPost();
+			this._isMounted && this.setPublishAtDate();
 		}
 	}
 
@@ -285,6 +289,10 @@ export default class Edit extends React.Component {
 			this.setPublishAtDate();
 		}
 	}
+
+	componentWillUnmount() {
+		this._isMounted = false;
+	 }
 
 	handleEditorChange = (content, editor) => {
 		const form = this.state.form;

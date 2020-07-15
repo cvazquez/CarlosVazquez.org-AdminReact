@@ -5,6 +5,8 @@ export default class Series extends React.Component {
 	constructor(props) {
 		super(props);
 
+		this._isMounted = false;
+
 		this.state = {
 			error				: null,
 			isLoaded			: false,
@@ -22,7 +24,6 @@ export default class Series extends React.Component {
 		this.handleSeriesBlur		= this.handleSeriesBlur.bind(this);
 		this.handleNewSeries		= this.handleNewSeries.bind(this);
 		this.handleNewSeriesSubmit	= this.handleNewSeriesSubmit.bind(this);
-		/* this.handleSeriesManageClick = this.handleSeriesManageClick.bind(this); */
 	}
 
 	getSeries() {
@@ -42,7 +43,7 @@ export default class Series extends React.Component {
 							saveStatus	: null}; // don't change case. Displays in series search overlay results
 					});
 
-					this.setState({
+					this._isMounted && this.setState({
 						isLoaded		: true,
 						series			: result.series,
 						seriesByName	: seriesByName,
@@ -50,7 +51,7 @@ export default class Series extends React.Component {
 					});
 				},
 				error => {
-					this.setState({
+					this._isMounted && this.setState({
 						isLoaded	: false,
 						error
 					})
@@ -59,8 +60,13 @@ export default class Series extends React.Component {
 	}
 
 	componentDidMount() {
-		this.getSeries();
+		this._isMounted = true;
+		this._isMounted && this.getSeries();
 	}
+
+	componentWillUnmount() {
+		this._isMounted = false;
+	 }
 
 	handleTextUpdate(e) {
 		const	id			= e.currentTarget.dataset.id,
@@ -198,6 +204,7 @@ export default class Series extends React.Component {
 										type		= "text"
 										value		= {seriesById[seriesByName[key]].name}
 										data-id		= {seriesByName[key]}
+										data-testid	= {seriesById[seriesByName[key]].name}
 										onChange	= {this.handleTextUpdate}
 										onBlur		= {this.handleSeriesBlur} />
 								<span className="list-save-status">{seriesById[seriesByName[key]].saveStatus}</span>
@@ -206,7 +213,8 @@ export default class Series extends React.Component {
 																pathname	: `/series/${seriesByName[key]}`,
 																state		: { name : seriesById[seriesByName[key]].name}
 															}}
-											className	= "series-manage-click">
+											className	= "series-manage-click"
+											data-testid	= {seriesById[seriesByName[key]].name + "_manage"}>
 										manage
 									</Link>]
 								</span>

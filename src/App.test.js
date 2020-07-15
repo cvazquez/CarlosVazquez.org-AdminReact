@@ -10,8 +10,6 @@ it('renders without crashing', () => {
 	render(<App />, <div />);
 });
 
-
-
 it('should take a snapshot', () => {
 	const { asFragment } = render(<App />)
 
@@ -79,7 +77,8 @@ test('Has Post Text', () => {
 		expect(navbar).toContainElement(link)
 	})
 
-	it('should navigate to the posts page', ()=> {
+	// /posts
+	it('should navigate to the posts page loading', ()=> {
 		const { container, getByTestId } = renderWithRouter(<App />)
 
 		fireEvent.click(getByTestId('Posts'))
@@ -87,7 +86,7 @@ test('Has Post Text', () => {
 		expect(container.innerHTML).toMatch('Loading...')
 	})
 
-	it('should navigate to the posts page resolved', async () => {
+	it('should navigate to the posts page loaded', async () => {
 		const { getByText , getByTestId } = renderWithRouter(<App />)
 
 		fireEvent.click(getByTestId('Posts'))
@@ -97,8 +96,62 @@ test('Has Post Text', () => {
 		expect(posts).toHaveTextContent('Title')
 	})
 
+	// /posts/add
+	it('should navigate to the add page loading', ()=> {
+		const { container, getByTestId } = renderWithRouter(<App />)
+
+		fireEvent.click(getByTestId('Add'))
+
+		expect(container.innerHTML).toMatch('Loading...')
+	})
+
+	it('should navigate to the add page loaded', async () => {
+		const { getByTestId } = renderWithRouter(<App />)
+
+		fireEvent.click(getByTestId('Add'))
+
+		const add = await waitForElement(() => getByTestId("Save"))
+
+		expect(add).toHaveAttribute('type', 'submit')
+	})
+
+	// /posts/edit
+	it('should navigate to the edit page loading', async ()=> {
+		const { container, getByTestId, getByText } = renderWithRouter(<App />)
+
+		fireEvent.click(getByTestId('Posts'))
+
+		await waitForElement(() => getByText("Title"))
+
+		fireEvent.click(getByTestId('38'))
+
+		expect(container.innerHTML).toMatch('Loading...')
+	})
+
+	it('should navigate to the edit page loaded', async ()=> {
+		const { getByTestId, getByText } = renderWithRouter(<App />)
+
+		fireEvent.click(getByTestId('Posts'))
+
+		await waitForElement(() => getByText("Title"))
+
+		fireEvent.click(getByTestId('38'))
+
+		const edit = await waitForElement(() => getByTestId("Save"))
+
+		expect(edit).toHaveAttribute('type', 'submit')
+	})
+
 	// /categories
-	it('should navigate to the categories page with the params', async ()=> {
+	it('should navigate to the categories page loading', ()=> {
+		const { container, getByTestId } = renderWithRouter(<App />)
+
+		fireEvent.click(getByTestId('Categories'))
+
+		expect(container.innerHTML).toMatch('Loading...')
+	})
+
+	it('should navigate to the categories page loaded', async ()=> {
 		const { getByTestId } = renderWithRouter(<App />)
 
 		fireEvent.click(getByTestId('Categories'))
@@ -106,5 +159,25 @@ test('Has Post Text', () => {
 		const posts = await waitForElement(() => getByTestId("About Me"))
 
 		expect(posts).toHaveClass('category')
-		//expect(posts).toHaveClass('value', expect.stringContaining('About'))
+	})
+
+	// /series
+	it('should navigate to the series page loading', ()=> {
+		const { container, getByTestId } = renderWithRouter(<App />)
+
+		fireEvent.click(getByTestId('Series'))
+
+		expect(container.innerHTML).toMatch('Loading...')
+	})
+
+	it('should navigate to the series page loaded', async ()=> {
+		const { getByTestId } = renderWithRouter(<App />)
+
+		fireEvent.click(getByTestId('Series'))
+
+		const	series			= await waitForElement(() => getByTestId("Patagonia")),
+				seriesManage	= getByTestId("Patagonia_manage");
+
+		expect(series).toHaveClass('series')
+		expect(seriesManage).toHaveClass('series-manage-click')
 	})

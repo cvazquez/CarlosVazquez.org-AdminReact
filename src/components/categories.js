@@ -4,6 +4,8 @@ export default class Categories extends React.Component {
 	constructor(props) {
 		super(props);
 
+		this._isMounted = false;
+
 		this.state = {
 			error				: null,
 			isLoaded			: false,
@@ -40,7 +42,7 @@ export default class Categories extends React.Component {
 							saveStatus	: null}; // don't change case. Displays in category search overlay results
 					});
 
-					this.setState({
+					this._isMounted && this.setState({
 						isLoaded						: true,
 						categories						: result.categories,
 						categoriesByName				: categoriesByName,
@@ -48,7 +50,7 @@ export default class Categories extends React.Component {
 					});
 				},
 				error => {
-					this.setState({
+					this._isMounted && this.setState({
 						isLoaded	: false,
 						error
 					})
@@ -57,8 +59,13 @@ export default class Categories extends React.Component {
 	}
 
 	componentDidMount() {
-		this.getCategories();
+		this._isMounted = true;
+		this._isMounted && this.getCategories();
 	}
+
+	componentWillUnmount() {
+		this._isMounted = false;
+	 }
 
 	handleTextUpdate(e) {
 		const	id				= e.currentTarget.dataset.id,

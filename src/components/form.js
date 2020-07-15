@@ -152,7 +152,10 @@ export default class Form extends React.Component {
 
 					<div className="save-status">{this.props.saveStatus}</div>
 
-					<input type="submit" name="submitPost" value="Save" />
+					<input	type		= "submit"
+							name		= "submitPost"
+							value		= "Save"
+							data-testid	= "Save"  />
 				</form>
 			</div>
 		)
