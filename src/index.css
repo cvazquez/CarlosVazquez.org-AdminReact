@@ -74,22 +74,20 @@ ul.header li a:hover {
 
 .grid-container > div {
 	text-align: left;
-
 }
 
 .grid-header-wrapper, .grid-row-wrapper {
 	display: contents;
-
 }
 
 .grid-header-wrapper > div {
 	background: var(--header-background-color);
 	color: var(--header-text-color);
-	padding: 10px 0px;
+	padding: 10px 0px 10px 10px;
 }
 
 .grid-row-wrapper > div {
-	padding: 10px 0px;
+	padding: 10px 0px 10px 10px;
 }
 
 .grid-row-wrapper:nth-child(odd) > div {

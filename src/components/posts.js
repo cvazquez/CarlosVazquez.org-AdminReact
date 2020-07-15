@@ -22,7 +22,7 @@ export default class Posts extends React.Component {
 		this.handleDeleteCancel = this.handleDeleteCancel.bind(this)
 	}
 
-	componentDidMount() {
+	getPosts() {
 		fetch(`${process.env.REACT_APP_API_URL}/getPosts`)
 			.then(res => res.json())
 			.then(
@@ -40,6 +40,10 @@ export default class Posts extends React.Component {
 					})
 				}
 			)
+	}
+
+	componentDidMount() {
+		this.getPosts();
 	}
 
 	displayLightBox() {

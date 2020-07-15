@@ -41,10 +41,11 @@ const App = function App() {
 
   return (
 			<Router>
-				<ul className="header">
+				<ul className="header" data-testid="header">
 					{links.map(link => (
 						<li key={link.text}>
-							<Link to={link.path}>{link.text}</Link>
+							<Link	to			= {link.path}
+									data-testid	= {link.text}>{link.text}</Link>
 						</li>
 					))}
 				</ul>

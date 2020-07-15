@@ -199,6 +199,7 @@ export default class Categories extends React.Component {
 										type		= "text"
 										value		= {categoriesById[categoriesByName[key]].name}
 										data-id		= {categoriesByName[key]}
+										data-testid	= {categoriesById[categoriesByName[key]].name}
 										onChange	= {this.handleTextUpdate}
 										onBlur		= {this.handleCategoryBlur} />
 								<span className="category-save-status">{categoriesById[categoriesByName[key]].saveStatus}</span>
