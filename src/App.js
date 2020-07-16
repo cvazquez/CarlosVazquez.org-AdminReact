@@ -11,8 +11,8 @@ import Categories from './components/categories'
 import Series from './components/series'
 import SeriesManager from './components/series_manager'
 
-export const getLinks = function getLinks() {
-	return [
+// Create an array of nav link objects, to loop over and display in nav bar at top of page
+const getNavLinks = () => [
 		{
 			path	: "/",
 			text	: "Home"
@@ -34,44 +34,45 @@ export const getLinks = function getLinks() {
 			text	: "Series"
 		},
 	]
-}
 
-const App = function App() {
-	const links = getLinks();
+const getNavHeader = () =>
+	<ul className="header" data-testid="header">
+	{	// Loop through nav links and display at top of page
+		getNavLinks().map(link =>
+			<li key={link.text}>
+				<Link	to			= {link.path}
+						data-testid	= {link.text}>
+					{link.text}
+				</Link>
+			</li>
+		)
+	}
+	</ul>
 
-  return (
+// Displays our nav links and controls routes from links
+const App = () =>
 			<Router>
-				<ul className="header" data-testid="header">
-					{links.map(link => (
-						<li key={link.text}>
-							<Link	to			= {link.path}
-									data-testid	= {link.text}>{link.text}</Link>
-						</li>
-					))}
-				</ul>
+				{getNavHeader()}
 
+				{/* React Router controlls paths from nav link clicks */}
 				<Switch>
-					<Route exact path="/">
-					</Route>
-					<Route exact path="/posts">
-						<Posts />
-					</Route>
-					<Route exact	path		= "/posts/edit/:id"
+					{/* Exact paths keep each sub folder from overriding parent path */}
+					<Route exact	path		= "/" />
+					<Route exact	path		= "/posts"
+									component	= {Posts} />
+					<Route 			path		= "/posts/edit/:id"
 									component	= {Edit} />
-					<Route path="/posts/add">
-						<Edit />
-					</Route>
-					<Route path="/categories">
-						<Categories />
-					</Route>
-					<Route exact path="/series">
-						<Series />
-					</Route>
-					<Route exact	path		= "/series/:id"
+					<Route 			path		= "/posts/add"
+									component	= {Edit} />
+					<Route 			path		= "/categories"
+									component	= {Categories} />
+					<Route exact 	path		= "/series"
+									component	= {Series} />
+					<Route 			path		= "/series/:id"
 									component	= {SeriesManager} />
 				</Switch>
 			</Router>
-	);
-}
+
 
 export default App;
+export {getNavLinks as getLinks } // For testing
