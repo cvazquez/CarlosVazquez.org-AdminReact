@@ -150,7 +150,12 @@ export default class Form extends React.Component {
 						/>
 					</div>
 
-					<div className="save-status">{this.props.saveStatus}</div>
+					{this.props.saveStatus}
+					{this.props.deletedPostCategoriesStatus}
+					{this.props.savedPostCategoriesStatus}
+					{this.props.savedPostFlickrSetStatus}
+					{this.props.savedPostSeriesStatus}
+					{this.props.deletedPostSeriesStatus}
 
 					<input	type		= "submit"
 							name		= "submitPost"

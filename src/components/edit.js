@@ -1,5 +1,10 @@
+/*
+	Form to edit and add blog posts
+*/
+
 import React from "react";
 import Form from "./form";
+import { checkAPIResponse, setSavedPostStatuses } from '../helpers/api'
 
 export default class Edit extends React.Component {
 	constructor(props) {
@@ -26,12 +31,29 @@ export default class Edit extends React.Component {
 		const date = new Date();
 
 		return {
-			id						: this.props.match ? this.props.match.params.id : null,
-			error					: null,
-			isLoaded				: false,
-			categories				: null,
-			categoriesByName		: {},
-			categoriesById			: [],
+			id								: this.props.match ? this.props.match.params.id : null,
+
+			// Loading Async Init
+			error							: null,
+			isLoaded						: false,
+
+			// Category
+			postCategories					: [],
+			categories						: null,
+			categoriesByName				: {},
+			categoriesById					: [],
+			categoryNamesSelectedDisplay	: [],
+			categoriesSelectedLowerCased	: [],
+
+			// Series
+			series							: [],
+			seriesByName					: {},
+			seriesById						: [],
+			seriesSelectedDisplay			: [],
+
+			// Flickr
+			flickrSets						: [],
+
 			form		: {
 				title					: "",
 				teaser					: "",
@@ -51,218 +73,209 @@ export default class Edit extends React.Component {
 				flickrSets				: [],
 				flickrSetId				: ""
 			},
-			categoryNamesSelectedDisplay	: [],
-			categoriesSelectedLowerCased	: [],
-			postCategories					: [],
+
+			// API Post (Save) Statuses
+			savedPostFlickrSet				: false,
+			savedPostFlickrSetStatus		: null,
+
+			deletedPostCategories			: false,
+			deletedPostCategoriesStatus		: null,
+			savedPostCategories				: false,
+			savedPostCategoriesStatus		: null,
+
+			savedPostSeries					: false,
+			savedPostSeriesStatus			: null,
+			deletedPostSeries				: false,
+			deletedPostSeriesStatus			: null,
+
 			updatePosted 					: false,
-			deletedCategories				: false,
-			savedCategories					: false,
-			savePostFlickrSet				: false,
 			saveStatus						: null,
+
 			saveDraftStatus					: null,
-			redirectCountDown				: this.intervalCountDown,
-			series							: [],
-			seriesByName					: {},
-			seriesById						: [],
-			seriesSelectedDisplay			: [],
-			flickrSets						: []
+
+			redirectCountDown				: this.intervalCountDown
 		};
 	}
 
 	getPost() {
 		fetch(`${process.env.REACT_APP_API_URL}/getPost/` + this.state.id)
-			.then(res => res.json())
+			.then(res => checkAPIResponse(res))
 			.then(
 				result => {
-					const 	post 							= result.post[0],
-							publishDate 					= new Date(post.publishAt),
-							categoriesByName 				= {},
-							categoriesById					= [],
-							categoryNamesSelected 			= [],
-							categoryNamesSelectedLowerCased = [],
-							categoryNamesSelectedDisplay	= [],
-							seriesByName					= {},
-							seriesById						= [],
-							seriesNameSelected				= [],
-							seriesSelectedDisplay			= [];
+					if(result && result.post && Array.isArray(result.post) && result.post.length === 1) {
+						const 	post 							= result.post[0],
+								publishDate 					= new Date(post.publishAt),
 
-					result.categories.forEach(item => {
-						categoriesByName[item.name.toLowerCase()] = item.id;
-						categoriesById[item.id] = item.name; // don't change case. Displays in category search overlay results
-					});
+								// Manage Category Selection
+								categoriesByName 				= {},
+								categoriesById					= [],
+								categoryNamesSelected 			= [],
+								categoryNamesSelectedLowerCased = [],
+								categoryNamesSelectedDisplay	= [],
 
-					result.postCategories.forEach(postCategory => {
-						categoryNamesSelected.push(postCategory.name);
-						categoryNamesSelectedLowerCased.push(postCategory.name.toLowerCase());
+								// Manage Series Selection
+								seriesByName					= {},
+								seriesById						= [],
+								seriesNameSelected				= [],
+								seriesSelectedDisplay			= [];
 
-						categoryNamesSelectedDisplay.push(
-							<li key={postCategory.name}>
-								{postCategory.name}
-								<span className="close" data-name={postCategory.name} onClick={this.handleCategoryClickRemove}>x</span>
-							</li>);
-					});
 
-					result.series.forEach(item => {
-						seriesByName[item.name.toLowerCase()] = item.id;
-						seriesById[item.id] = item.name; // don't change case. Displays in series search overlay results
-					});
+						// ******* Populate Category Objects *******
 
-					result.postSeries.forEach(series => {
-						seriesNameSelected.push(series.name);
+							// Access all categories by name and id (reverse lookup)
+							result.categories.forEach(item => {
+								categoriesByName[item.name.toLowerCase()] = item.id;
+								categoriesById[item.id] = item.name; // don't change case. Displays in category search overlay results
+							});
 
-						seriesSelectedDisplay.push(
-							<li key={series.id}>
-								{series.name}
-								<span className="close" data-name={series.name} onClick={this.handleSeriesClickRemove}>x</span>
-							</li>
-						);
-					});
+							// Loop through categories already attached to a post
+							result.postCategories.forEach(postCategory => {
+								// Create arrays of normal and lowercased category names, for auto-complete use
+								categoryNamesSelected.push(postCategory.name);
+								categoryNamesSelectedLowerCased.push(postCategory.name.toLowerCase());
 
-					this._isMounted && this.setState({
-						isLoaded			: true,
-						categories			: result.categories,
-						categoriesByName	: categoriesByName,
-						categoriesById		: categoriesById,
-						categoryOverlay		: null,
-						form		: {
-							title					: post.title,
-							teaser					: post.teaser,
-							content					: post.content,
-							metaDescription			: post.metaDescription,
-							metaKeyWords			: post.metaKeyWords,
-							publishAt				: post.publishAt,
-							publishYear				: publishDate.getFullYear(),
-							publishMonth			: publishDate.getMonth()+1,
-							publishDay				: publishDate.getDate(),
-							publishHour				: publishDate.getHours(),
-							publishMinute			: publishDate.getMinutes(),
-							entryId					: post.id,
-						// this breaks typing in the field ???	categoryName			: "",
-							categoryNamesSelected,
-							seriesNameSelected,
-							postSeriesSelected		: result.postSeries,
-							flickrSets				: result.flickrSets,
-							flickrSetId				: typeof(post.flickrSetId) === "undefined" || post.flickrSetId === null ? "" : post.flickrSetId
-						},
-						categoryNamesSelectedDisplay	: categoryNamesSelectedDisplay,
-						categoriesSelectedLowerCased	: categoryNamesSelectedLowerCased,
-						postCategories					: result.postCategories,
-						series							: result.series,
-						seriesByName,
-						seriesById,
-						seriesSelectedDisplay
-					});
+								// Create an array of html list elements to display categories
+								categoryNamesSelectedDisplay.push(
+									<li key={postCategory.name}>
+										{postCategory.name}
+										<span className="close" data-name={postCategory.name} onClick={this.handleCategoryClickRemove}>x</span>
+									</li>);
+							});
+
+
+						// ******** Populate Series Objects *********
+							// Access all series by name and id (reverse lookup)
+							result.series.forEach(item => {
+								seriesByName[item.name.toLowerCase()] = item.id;
+								seriesById[item.id] = item.name; // don't change case. Displays in series search overlay results
+							});
+
+							// Loop through series already attached to a post
+							result.postSeries.forEach(series => {
+								// Add series to an array, to add/remove series, and post to save
+								seriesNameSelected.push(series.name);
+
+								// Create an array of html list elements to display series
+								seriesSelectedDisplay.push(
+									<li key={series.id}>
+										{series.name}
+										<span className="close" data-name={series.name} onClick={this.handleSeriesClickRemove}>x</span>
+									</li>
+								);
+							});
+
+
+						this._isMounted && this.setState({
+							isLoaded			: true,
+							categories			: result.categories,
+							categoriesByName	: categoriesByName,
+							categoriesById		: categoriesById,
+							categoryOverlay		: null,
+							form		: {
+								title					: post.title,
+								teaser					: post.teaser,
+								content					: post.content,
+								metaDescription			: post.metaDescription,
+								metaKeyWords			: post.metaKeyWords,
+								publishAt				: post.publishAt,
+								publishYear				: publishDate.getFullYear(),
+								publishMonth			: publishDate.getMonth()+1,
+								publishDay				: publishDate.getDate(),
+								publishHour				: publishDate.getHours(),
+								publishMinute			: publishDate.getMinutes(),
+								entryId					: post.id,
+							// this breaks typing in the field ???	categoryName			: "",
+								categoryNamesSelected,
+								seriesNameSelected,
+								postSeriesSelected		: result.postSeries,
+								flickrSets				: result.flickrSets,
+								flickrSetId				: typeof(post.flickrSetId) === "undefined" || post.flickrSetId === null ? "" : post.flickrSetId
+							},
+							categoryNamesSelectedDisplay	: categoryNamesSelectedDisplay,
+							categoriesSelectedLowerCased	: categoryNamesSelectedLowerCased,
+							postCategories					: result.postCategories,
+							series							: result.series,
+							seriesByName,
+							seriesById,
+							seriesSelectedDisplay
+						});
+					} else {
+						throw new Error("Result post response is invalid. Check API response")
+					}
 				},
 				error => {
 					this._isMounted && this.setState({
 						isLoaded	: false,
 						error
 					})
+
+					console.log("No Response from API to retrieve post", error)
 				}
-			)
-	}
+			).catch(error => {
+				this._isMounted && this.setState({
+					isLoaded	: false,
+					error
+				})
 
-	getCategories() {
-		fetch(`${process.env.REACT_APP_API_URL}/getCategories`)
-			.then(res => res.json())
-			.then(
-				result => {
-					const 	categoriesByName	= {},
-							categoriesById		= [];
-
-					result.categories.forEach(item => {
-						categoriesByName[item.name.toLowerCase()] = item.id;
-						categoriesById[item.id] = item.name; // don't change case. Displays in category search overlay results
-					});
-
-					this._isMounted && this.setState({
-						isLoaded						: true,
-						categories						: result.categories,
-						categoriesByName				: categoriesByName,
-						categoriesById					: categoriesById,
-						categoryOverlay					: null
-					});
-				},
-				error => {
-					this._isMounted && this.setState({
-						isLoaded	: false,
-						error
-					})
-				}
-			)
-	}
-
-	getSeries() {
-		fetch(`${process.env.REACT_APP_API_URL}/getSeries`)
-			.then(res => res.json())
-			.then(
-				result => {
-					const	seriesByName					= {},
-							seriesById						= [];
-
-					result.series.forEach(item => {
-						seriesByName[item.name.toLowerCase()] = item.id;
-						seriesById[item.id] = item.name; // don't change case. Displays in series search overlay results
-					});
-
-					this._isMounted && this.setState({
-						isLoaded	: true,
-						series		: result.series,
-						seriesByName,
-						seriesById
-					});
-				},
-				error => {
-					this._isMounted && this.setState({
-						isLoaded	: false,
-						error
-					})
-				}
-			)
+				console.error("API Request Fetch Error:", error)
+			})
 	}
 
 	getNewPost() {
 		fetch(`${process.env.REACT_APP_API_URL}/getNewPost`)
-			.then(res => res.json())
+			.then(res => checkAPIResponse(res))
 			.then(
 				result => {
-					const	seriesByName		= {},
-							seriesById			= [],
-							categoriesByName	= {},
-							categoriesById		= [],
-							form				= this.state.form;
+					if(result.series && result.categories && result.flickrSets) {
+						const	seriesByName		= {},
+								seriesById			= [],
+								categoriesByName	= {},
+								categoriesById		= [],
+								form				= this.state.form;
 
-					result.series.forEach(item => {
-						seriesByName[item.name.toLowerCase()] = item.id;
-						seriesById[item.id] = item.name; // don't change case. Displays in series search overlay results
-					});
+						result.series.forEach(item => {
+							seriesByName[item.name.toLowerCase()] = item.id;
+							seriesById[item.id] = item.name; // don't change case. Displays in series search overlay results
+						});
 
-					result.categories.forEach(item => {
-						categoriesByName[item.name.toLowerCase()] = item.id;
-						categoriesById[item.id] = item.name; // don't change case. Displays in category search overlay results
-					});
+						result.categories.forEach(item => {
+							categoriesByName[item.name.toLowerCase()] = item.id;
+							categoriesById[item.id] = item.name; // don't change case. Displays in category search overlay results
+						});
 
-					form.flickrSets = result.flickrSets;
+						form.flickrSets = result.flickrSets;
 
-					this._isMounted && this.setState({
-						isLoaded			: true,
-						series				: result.series,
-						seriesByName,
-						seriesById,
-						categories			: result.categories,
-						categoriesByName	: categoriesByName,
-						categoriesById		: categoriesById,
-						categoryOverlay		: null,
-						form
-					});
+						this._isMounted && this.setState({
+							isLoaded			: true,
+							series				: result.series,
+							seriesByName,
+							seriesById,
+							categories			: result.categories,
+							categoriesByName,
+							categoriesById,
+							categoryOverlay		: null,
+							form
+						});
+					} else {
+						throw new Error("Result new post response is invalid. Check API response")
+					}
 				},
 				error => {
 					this._isMounted && this.setState({
 						isLoaded	: false,
 						error
 					})
+
+					console.log("No Response from API to retrieve new post", error)
 				}
-			)
+			).catch(error => {
+				this._isMounted && this.setState({
+					isLoaded	: false,
+					error
+				})
+
+				console.error("API Request Fetch Error for new post:", error)
+			})
 	}
 
 	componentDidMount() {
@@ -294,7 +307,7 @@ export default class Edit extends React.Component {
 		this._isMounted = false;
 	 }
 
-	handleEditorChange = (content, editor) => {
+	handleEditorChange(content) {
 		const form = this.state.form;
 
 		form.content = content;
@@ -329,8 +342,8 @@ export default class Edit extends React.Component {
 	}
 
 	handleTextUpdate(event) {
-		const	form				= this.state.form,
-				fieldName			= event.target.name;
+		const	form		= this.state.form,
+				fieldName	= event.target.name;
 
 		form[fieldName] = event.target.value;
 
@@ -338,7 +351,7 @@ export default class Edit extends React.Component {
 			form
 		});
 
-		if(["publishYear", "publishMonth", "publishDay",	"publishHour", "publishMinute"].indexOf(fieldName) > -1) {
+		if(["publishYear", "publishMonth", "publishDay", "publishHour", "publishMinute"].indexOf(fieldName) > -1) {
 			this.setPublishAtDate();
 		}
 	}
@@ -390,11 +403,11 @@ export default class Edit extends React.Component {
 	}
 
 	handleCategoryClick(event) {
-		const	state			= this.state,
-				form			= state.form,
-				dataSet			= event.currentTarget.dataset,
-				categoryName	= dataSet.value,
-				categoriesSelectedLowerCased = this.state.categoriesSelectedLowerCased;
+		const	state							= this.state,
+				form							= state.form,
+				categoryName					= event.currentTarget.dataset.value,
+				categoryNamesSelectedDisplay	= state.categoryNamesSelectedDisplay,
+				categoriesSelectedLowerCased 	= state.categoriesSelectedLowerCased;
 
 		if(form.categoryNamesSelected.indexOf(categoryName) === -1) {
 			form.categoryNamesSelected.push(categoryName);
@@ -402,7 +415,7 @@ export default class Edit extends React.Component {
 
 			//form.categoryName = ""; //  A component is changing an uncontrolled input of type text to be controlled
 
-			state.categoryNamesSelectedDisplay.unshift(
+			categoryNamesSelectedDisplay.unshift(
 				<li key={categoryName}>
 					{categoryName}
 					<span className="close" data-name={categoryName} onClick={this.handleCategoryClickRemove}>x</span>
@@ -410,8 +423,8 @@ export default class Edit extends React.Component {
 			);
 
 			this.setState({
-				categoryNamesSelectedDisplay	: state.categoryNamesSelectedDisplay,
 				categoryOverlay					: '',
+				categoryNamesSelectedDisplay,
 				form,
 				categoriesSelectedLowerCased
 			})
@@ -424,30 +437,25 @@ export default class Edit extends React.Component {
 		});
 	}
 
-	buildResultsOverlay(results) {
-		return(
-			<div className="search-results-container">
-				<div className="close" onClick={this.handleSearchResultsClose}>x</div>
-				<ul className="search-results-overlay">
-					{
-						results.length ?
-							results.map((result, index) => (
-								<li key			= {result}
-									data-value	= {result}
-									data-id		= {index}
-									onClick		= {this.handleCategoryClick}>
-									{result}
-								</li>
-							)) : "No Results Founds"
-					}
-				</ul>
-			</div>
-		)
-	}
+	buildResultsOverlay = results =>
+				<div className="search-results-container">
+					<div className="close" onClick={this.handleSearchResultsClose}>x</div>
+					<ul className="search-results-overlay">
+						{
+							results.length ?
+								results.map((result, index) => (
+									<li key			= {result}
+										data-value	= {result}
+										data-id		= {index}
+										onClick		= {this.handleCategoryClick}>
+										{result}
+									</li>
+								)) : "No Results Founds"
+						}
+					</ul>
+				</div>
 
-	escapeRegExp(text) {
-		return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-	}
+	escapeRegExp = text => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
 	handleCategoryInput(event) {
 		const 	searchTerms	= event.target.value.toLowerCase().trim(),
@@ -489,81 +497,75 @@ export default class Edit extends React.Component {
 		});
 	}
 
-	getAlertSaveStatus(postAdded) {
-		return <div className="alert alert-success">
-					Post Successfully Saved{postAdded ? `...Redirecting in ${this.state.redirectCountDown} Seconds` : ""}
-				</div>
-	}
+	getAlertSaveStatus = postAdded =>
+		<div className="alert alert-success">
+			Post Successfully Saved{postAdded ? `...Redirecting in ${this.state.redirectCountDown} Seconds` : ""}
+		</div>
 
 	handleSubmit(event) {
 		let action = this.state.id ? "updatePost" : "addPost";
 
 		event.preventDefault();
 
-		// Save comment to database
+		// Save post to database
 		fetch(`${process.env.REACT_APP_API_URL}/${action}`, {
-							method	: 'POST',
-							body	: JSON.stringify(this.state.form),
-							headers	: {	'Content-Type': 'application/json'}
-						})
-						.then(res => res.json())
-						.then(json => {
+				method	: 'POST',
+				body	: JSON.stringify(this.state.form),
+				headers	: {	'Content-Type': 'application/json'}
+			})
+			.then(res => checkAPIResponse(res))
+			.then(json => {
 
-							if(json.savePost && json.savePost.affectedRows && json.savePost.affectedRows > 0) {
-								let  postAdded = action === "addPost" && json.savePost.insertId > 0 ? true : false;
+				setSavedPostStatuses("Deleted Post Categories", "deletedPostCategories", json, this);
+				setSavedPostStatuses("Saved Post Categories", "savedPostCategories", json, this);
+				setSavedPostStatuses("Save Flickr Set", "savedPostFlickrSet", json, this);
+				setSavedPostStatuses("Saved Post Series", "savedPostSeries", json, this);
+				setSavedPostStatuses("Deleted Post Series", "deletedPostSeries", json, this);
 
-								this.setState({
-									id				: postAdded ? json.savePost.insertId : this.state.id,
-									updatePosted	: true,
-									saveStatus		: this.getAlertSaveStatus(postAdded)
+				if(json.savePost && json.savePost.affectedRows && json.savePost.affectedRows > 0) {
+					let  postAdded = action === "addPost" && json.savePost.insertId > 0 ? true : false;
 
-								});
+					this.setState({
+						id				: postAdded ? json.savePost.insertId : this.state.id,
+						updatePosted	: true,
+						saveStatus		: this.getAlertSaveStatus(postAdded)
+					});
 
-								if(postAdded) {
-									setInterval(() => {
-										this.setState({redirectCountDown : this.state.redirectCountDown - 1});
+					if(postAdded) {
+						setInterval(() => {
+							this.setState({redirectCountDown : this.state.redirectCountDown - 1});
 
-										this.setState({
-											saveStatus : this.getAlertSaveStatus(true)
-										})
-									}, 1000);
-
-									setTimeout(() => {
-										document.location.href = `/posts/edit/${json.savePost.insertId}`;
-									}, 5000);
-								} else {
-									setTimeout(() => this.setState({
-										saveStatus	: null
-									}), 5000);
-								}
-
-							} else {
-								if(json.savePost && json.savePost.message && json.savePost.message.length)
-								this.setState({
-									updatePosted	: false,
-									saveStatus		: 	<div className="alert alert-danger">Error Saving Post.
-															{	json.savePost && json.savePost.message && json.savePost.message.length ?
-																	" " + json.savePost.message : " Unknown Error."
-															}
-														</div>
-								});
-							}
-
-							(json.deletePostCategories && json.deletePostCategories.affectedRows && json.deletePostCategories.affectedRows > 0) &&
-								this.setState({
-									deletedCategories	: true
-								});
-
-							(json.savePostCategories && json.savePostCategories.affectedRows && json.savePostCategories.affectedRows > 0) &&
-								this.setState({
-									savedCategories	: true
-								});
-
-							(json.savePostFlickrSet && json.savePostFlickrSet.affectedRows && json.savePostFlickrSet.affectedRows > 0) &&
 							this.setState({
-								savePostFlickrSet	: true
-							});
+								saveStatus : this.getAlertSaveStatus(true)
+							})
+						}, 1000);
+
+						setTimeout(() => {
+							document.location.href = `/posts/edit/${json.savePost.insertId}`;
+						}, 5000);
+					} else {
+						setTimeout(() => this.setState({
+							saveStatus	: null
+						}), 5000);
+					}
+
+				} else {
+					if(json.savePost && json.savePost.message && json.savePost.message.length) {
+						this.setState({
+							updatePosted	: false,
+							saveStatus		: 	<div className="alert alert-danger">Error Saving Post.
+													{	json.savePost && json.savePost.message && json.savePost.message.length ?
+															" " + json.savePost.message : " Unknown Error."
+													}
+												</div>
 						});
+					}
+				}
+
+
+			},
+			error => console.log("No Response from API saving post", error)
+		).catch(error => console.error("API Request Fetch Error saving post:", error));
 	}
 
 	handleSaveDraft() {
@@ -574,22 +576,23 @@ export default class Edit extends React.Component {
 
 		// Save draft to database
 		fetch(`${process.env.REACT_APP_API_URL}/saveDraft`, {
-							method	: 'POST',
-							body	: JSON.stringify(this.state.form),
-							headers	: {	'Content-Type': 'application/json'}
-						})
-						.then(res => res.json())
-						.then(json => {
-							(json.status && json.status.affectedRows && json.status.affectedRows > 0) &&
-								this.setState({
-									updatePosted	: true,
-									saveDraftStatus	: <div className="alert alert-success">Draft Saved!!!</div>
-								});
+			method	: 'POST',
+			body	: JSON.stringify(this.state.form),
+			headers	: {	'Content-Type': 'application/json'}
+		})
+		.then(res => checkAPIResponse(res))
+		.then(json => {
+			(json.status && json.status.affectedRows && json.status.affectedRows > 0) &&
+				this.setState({
+					updatePosted	: true,
+					saveDraftStatus	: <div className="alert alert-success">Draft Saved!!!</div>
+				});
 
-								setTimeout(() => this.setState({
-									saveDraftStatus : null
-								}), 5000);
-						});
+				setTimeout(() => this.setState({
+					saveDraftStatus : null
+				}), 5000);
+			}, error => console.log("No Response from API saving draft", error)
+		).catch(error => console.error("API Request Fetch Error saving draft:", error));
 	}
 
 	post() {
@@ -602,18 +605,33 @@ export default class Edit extends React.Component {
 		  } else {
 			return (
 					<Form	form							= {form}
+
+							// Handlers
 							handleCategoryInput				= {this.handleCategoryInput}
 							handleTextUpdate				= {this.handleTextUpdate}
 							handleSubmit					= {this.handleSubmit}
 							handleEditorChange				= {this.handleEditorChange}
 							handleSaveDraft					= {this.handleSaveDraft}
 							handleSeriesSelection			= {this.handleSeriesSelection}
-							saveStatus						= {this.state.saveStatus}
-							saveDraftStatus					= {this.state.saveDraftStatus}
+
+							// Category Selection
 							categoryOverlay					= {this.state.categoryOverlay}
 							categoryNamesSelectedDisplay	= {this.state.categoryNamesSelectedDisplay}
+
+							// Series Selection
 							series							= {this.state.series}
-							seriesSelectedDisplay			= {this.state.seriesSelectedDisplay} />
+							seriesSelectedDisplay			= {this.state.seriesSelectedDisplay}
+
+							// Save Statuses
+							saveStatus						= {this.state.saveStatus}
+							saveDraftStatus					= {this.state.saveDraftStatus}
+
+							deletedPostCategoriesStatus		= {this.state.deletedPostCategoriesStatus}
+							savedPostCategoriesStatus		= {this.state.savedPostCategoriesStatus}
+							savedPostFlickrSetStatus		= {this.state.savedPostFlickrSetStatus}
+							savedPostSeriesStatus			= {this.state.savedPostSeriesStatus}
+							deletedPostSeriesStatus			= {this.state.deletedPostSeriesStatus}
+					/>
 			)
 		}
 	}

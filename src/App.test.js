@@ -1,3 +1,9 @@
+/*
+	TODO :
+		* Simulate Updated Post
+		* Simulate New Post
+*/
+
 import React from 'react';
 import { render, cleanup, fireEvent, waitForElement } from '@testing-library/react';
 import App, {getLinks} from './App';

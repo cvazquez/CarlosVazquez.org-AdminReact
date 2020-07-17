@@ -1,4 +1,5 @@
 // Helper functions to use in API calls
+import React from "react";
 
 function checkAPIResponse(res) {
 	if(res.ok) {
@@ -16,4 +17,24 @@ function checkAPIResponse(res) {
 	}
 }
 
-export { checkAPIResponse };
+function setSavedPostStatuses(name, type, json, that) {
+	const	status	= json[type];
+
+	if(status) {
+		if(status.affectedRows && status.affectedRows > 0) {
+			that.setState({
+				[type]				: true,
+				[type + "Status"]	: name
+			});
+		} else if(status.failed) {
+			that.setState({
+				[type]				:	false,
+				[type + "Status"]	:	<div className="alert alert-danger">
+											{status.message ? status.message : (type + " Saving Error")}
+										</div>
+			});
+		}
+	}
+}
+
+export { checkAPIResponse, setSavedPostStatuses };
