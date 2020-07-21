@@ -24,7 +24,7 @@ function setSavedPostStatuses(name, type, json, that) {
 		if(status.affectedRows && status.affectedRows > 0) {
 			that.setState({
 				[type]				: true,
-				[type + "Status"]	: name
+				[type + "Status"]	: <div className="alert alert-success">{name}</div>
 			});
 		} else if(status.failed) {
 			const message = status.message ? status.message : (type + " Saving Error");

@@ -107,6 +107,7 @@ export default class Edit extends React.Component {
 		};
 	}
 
+	// Common indexed states
 	setIndexedStates(series, categories) {
 		const	seriesByName		= {},
 				seriesById			= [],
@@ -133,7 +134,7 @@ export default class Edit extends React.Component {
 		})
 	}
 
-
+	// Retrieve existing post to edit
 	getPost() {
 		fetch(`${process.env.REACT_APP_API_URL}/getPost/` + this.state.id)
 			.then(res => checkAPIResponse(res))
@@ -446,7 +447,7 @@ export default class Edit extends React.Component {
 						{
 							results.length ?
 								results.map((result, index) => (
-									<li key			= {result}
+									<li key			= {index}
 										data-value	= {result}
 										data-id		= {index}
 										onClick		= {this.handleCategoryClick}>
@@ -517,7 +518,7 @@ export default class Edit extends React.Component {
 				// Display alert messages for components of form
 				savedPostStatuses.add(setSavedPostStatuses("Deleted Post Categories", "deletedPostCategories", json, this));
 				savedPostStatuses.add(setSavedPostStatuses("Saved Post Categories", "savedPostCategories", json, this));
-				savedPostStatuses.add(setSavedPostStatuses("Save Flickr Set", "savedPostFlickrSet", json, this));
+				savedPostStatuses.add(setSavedPostStatuses("Saved Flickr Set", "savedPostFlickrSet", json, this));
 				savedPostStatuses.add(setSavedPostStatuses("Saved Post Series", "savedPostSeries", json, this));
 				savedPostStatuses.add(setSavedPostStatuses("Deleted Post Series", "deletedPostSeries", json, this));
 				savedPostStatuses.delete(null);
