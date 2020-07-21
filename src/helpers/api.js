@@ -27,14 +27,19 @@ function setSavedPostStatuses(name, type, json, that) {
 				[type + "Status"]	: name
 			});
 		} else if(status.failed) {
+			const message = status.message ? status.message : (type + " Saving Error");
 			that.setState({
 				[type]				:	false,
 				[type + "Status"]	:	<div className="alert alert-danger">
-											{status.message ? status.message : (type + " Saving Error")}
+											{message}
 										</div>
 			});
+
+			return message; // return which status failed
 		}
 	}
+
+	return null;
 }
 
 export { checkAPIResponse, setSavedPostStatuses };

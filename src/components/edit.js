@@ -5,6 +5,7 @@
 import React from "react";
 import Form from "./form";
 import { checkAPIResponse, setSavedPostStatuses } from '../helpers/api'
+import { getlistItemDisplay } from '../helpers/form'
 
 export default class Edit extends React.Component {
 	constructor(props) {
@@ -31,6 +32,7 @@ export default class Edit extends React.Component {
 		const date = new Date();
 
 		return {
+			// A new post will have a null value
 			id								: this.props.match ? this.props.match.params.id : null,
 
 			// Loading Async Init
@@ -51,25 +53,33 @@ export default class Edit extends React.Component {
 			seriesById						: [],
 			seriesSelectedDisplay			: [],
 
-			// Flickr
+			// Flickr Photos
 			flickrSets						: [],
 
 			form		: {
+				entryId					: null,
 				title					: "",
 				teaser					: "",
 				metaDescription			: "",
 				metaKeyWords			: "",
+
+				// Publish At Date
 				publishAt				: "",
 				publishYear				: date.getFullYear(),
 				publishMonth			: date.getMonth()+1,
 				publishDay				: date.getDate(),
 				publishHour				: date.getHours(),
 				publishMinute			: date.getMinutes(),
+
+				// Categories
 				categoryName			: "",
 				categoryNamesSelected 	: [],
-				entryId					: null,
+
+				// Series
 				seriesNameSelected		: [],
 				postSeriesSelected		: [],
+
+				// Flickr photos
 				flickrSets				: [],
 				flickrSetId				: ""
 			},
@@ -97,6 +107,33 @@ export default class Edit extends React.Component {
 		};
 	}
 
+	setIndexedStates(series, categories) {
+		const	seriesByName		= {},
+				seriesById			= [],
+				categoriesByName	= {},
+				categoriesById		= [];
+
+		// Access all series by name and id (reverse lookup)
+		series.forEach(item => {
+			seriesByName[item.name.toLowerCase()] = item.id;
+			seriesById[item.id] = item.name; // don't change case. Displays in series search overlay results
+		});
+
+		// Access all categories by name and id (reverse lookup)
+		categories.forEach(item => {
+			categoriesByName[item.name.toLowerCase()] = item.id;
+			categoriesById[item.id] = item.name; // don't change case. Displays in category search overlay results
+		});
+
+		this._isMounted && this.setState({
+			seriesByName,
+			seriesById,
+			categoriesByName,
+			categoriesById
+		})
+	}
+
+
 	getPost() {
 		fetch(`${process.env.REACT_APP_API_URL}/getPost/` + this.state.id)
 			.then(res => checkAPIResponse(res))
@@ -107,27 +144,17 @@ export default class Edit extends React.Component {
 								publishDate 					= new Date(post.publishAt),
 
 								// Manage Category Selection
-								categoriesByName 				= {},
-								categoriesById					= [],
 								categoryNamesSelected 			= [],
 								categoryNamesSelectedLowerCased = [],
 								categoryNamesSelectedDisplay	= [],
 
 								// Manage Series Selection
-								seriesByName					= {},
-								seriesById						= [],
 								seriesNameSelected				= [],
 								seriesSelectedDisplay			= [];
 
+						this.setIndexedStates(result.series, result.categories);
 
 						// ******* Populate Category Objects *******
-
-							// Access all categories by name and id (reverse lookup)
-							result.categories.forEach(item => {
-								categoriesByName[item.name.toLowerCase()] = item.id;
-								categoriesById[item.id] = item.name; // don't change case. Displays in category search overlay results
-							});
-
 							// Loop through categories already attached to a post
 							result.postCategories.forEach(postCategory => {
 								// Create arrays of normal and lowercased category names, for auto-complete use
@@ -135,42 +162,24 @@ export default class Edit extends React.Component {
 								categoryNamesSelectedLowerCased.push(postCategory.name.toLowerCase());
 
 								// Create an array of html list elements to display categories
-								categoryNamesSelectedDisplay.push(
-									<li key={postCategory.name}>
-										{postCategory.name}
-										<span className="close" data-name={postCategory.name} onClick={this.handleCategoryClickRemove}>x</span>
-									</li>);
+								categoryNamesSelectedDisplay.push(getlistItemDisplay(postCategory.name, postCategory.name, this.handleCategoryClickRemove));
 							});
 
 
 						// ******** Populate Series Objects *********
-							// Access all series by name and id (reverse lookup)
-							result.series.forEach(item => {
-								seriesByName[item.name.toLowerCase()] = item.id;
-								seriesById[item.id] = item.name; // don't change case. Displays in series search overlay results
-							});
-
 							// Loop through series already attached to a post
 							result.postSeries.forEach(series => {
 								// Add series to an array, to add/remove series, and post to save
 								seriesNameSelected.push(series.name);
 
 								// Create an array of html list elements to display series
-								seriesSelectedDisplay.push(
-									<li key={series.id}>
-										{series.name}
-										<span className="close" data-name={series.name} onClick={this.handleSeriesClickRemove}>x</span>
-									</li>
-								);
+								seriesSelectedDisplay.push(getlistItemDisplay(series.id, series.name, this.handleSeriesClickRemove));
 							});
 
 
 						this._isMounted && this.setState({
 							isLoaded			: true,
-							categories			: result.categories,
-							categoriesByName	: categoriesByName,
-							categoriesById		: categoriesById,
-							categoryOverlay		: null,
+
 							form		: {
 								title					: post.title,
 								teaser					: post.teaser,
@@ -184,19 +193,20 @@ export default class Edit extends React.Component {
 								publishHour				: publishDate.getHours(),
 								publishMinute			: publishDate.getMinutes(),
 								entryId					: post.id,
-							// this breaks typing in the field ???	categoryName			: "",
 								categoryNamesSelected,
 								seriesNameSelected,
 								postSeriesSelected		: result.postSeries,
 								flickrSets				: result.flickrSets,
 								flickrSetId				: typeof(post.flickrSetId) === "undefined" || post.flickrSetId === null ? "" : post.flickrSetId
 							},
+
 							categoryNamesSelectedDisplay	: categoryNamesSelectedDisplay,
 							categoriesSelectedLowerCased	: categoryNamesSelectedLowerCased,
 							postCategories					: result.postCategories,
+							categories						: result.categories,
+							categoryOverlay					: null,
+
 							series							: result.series,
-							seriesByName,
-							seriesById,
 							seriesSelectedDisplay
 						});
 					} else {
@@ -227,32 +237,16 @@ export default class Edit extends React.Component {
 			.then(
 				result => {
 					if(result.series && result.categories && result.flickrSets) {
-						const	seriesByName		= {},
-								seriesById			= [],
-								categoriesByName	= {},
-								categoriesById		= [],
-								form				= this.state.form;
+						const	form				= this.state.form;
 
-						result.series.forEach(item => {
-							seriesByName[item.name.toLowerCase()] = item.id;
-							seriesById[item.id] = item.name; // don't change case. Displays in series search overlay results
-						});
-
-						result.categories.forEach(item => {
-							categoriesByName[item.name.toLowerCase()] = item.id;
-							categoriesById[item.id] = item.name; // don't change case. Displays in category search overlay results
-						});
+						this.setIndexedStates(result.series, result.categories);
 
 						form.flickrSets = result.flickrSets;
 
 						this._isMounted && this.setState({
 							isLoaded			: true,
 							series				: result.series,
-							seriesByName,
-							seriesById,
 							categories			: result.categories,
-							categoriesByName,
-							categoriesById,
 							categoryOverlay		: null,
 							form
 						});
@@ -307,6 +301,7 @@ export default class Edit extends React.Component {
 		this._isMounted = false;
 	 }
 
+	 // TinyMCE content field update
 	handleEditorChange(content) {
 		const form = this.state.form;
 
@@ -317,6 +312,7 @@ export default class Edit extends React.Component {
 		});
 	}
 
+	// Format the publish date form fields into a valid date format
 	setPublishAtDate() {
 		const form = this.state.form;
 
@@ -341,6 +337,7 @@ export default class Edit extends React.Component {
 		});
 	}
 
+	// Set form fields state
 	handleTextUpdate(event) {
 		const	form		= this.state.form,
 				fieldName	= event.target.name;
@@ -351,57 +348,64 @@ export default class Edit extends React.Component {
 			form
 		});
 
+		// Separate function for publish at field, to format a proper date
 		if(["publishYear", "publishMonth", "publishDay", "publishHour", "publishMinute"].indexOf(fieldName) > -1) {
 			this.setPublishAtDate();
 		}
 	}
 
+	// Trigger when the user clicks to remove existing Categories applied to the post
 	handleCategoryClickRemove(event) {
 		const	form = this.state.form,
-				categoryNamesSelectedDisplay = [],
-				categoryNamesSelected = form.categoryNamesSelected;
+				categoryNamesSelectedDisplay = [];
 
-		form.categoryNamesSelected = categoryNamesSelected.filter(categoryName => categoryName !== event.currentTarget.dataset.name);
+		let 	categoriesSelectedLowerCased = this.state.categoriesSelectedLowerCased;
 
+
+		// Remove the clicked on category from the existing list of categories selected
+		form.categoryNamesSelected = form.categoryNamesSelected.filter(categoryName => categoryName !== event.currentTarget.dataset.name);
+
+		// Then lowercase them for use in category search
+		categoriesSelectedLowerCased = form.categoryNamesSelected.map(category => category.toLowerCase());
+
+		// Update the displayed list of categories selected
 		for(let index in form.categoryNamesSelected) {
-			categoryNamesSelectedDisplay.push(
-				<li key={form.categoryNamesSelected[index]}>
-					{form.categoryNamesSelected[index]}
-					<span className="close" data-name={form.categoryNamesSelected[index]} onClick={this.handleCategoryClickRemove}>x</span>
-				</li>);
+			categoryNamesSelectedDisplay.push(getlistItemDisplay(index, form.categoryNamesSelected[index], this.handleCategoryClickRemove));
 		}
 
+		// Replace displayed and searchable list of categories, and category form field, san removed category
 		this.setState({
 			categoryNamesSelectedDisplay,
+			categoriesSelectedLowerCased,
 			form
 		})
 	}
 
+	// User clicks to remove a series
 	handleSeriesClickRemove(event) {
 		const	form = this.state.form,
-				seriesSelectedDisplay = [],
-				seriesSelected = form.seriesNameSelected;
+				seriesSelectedDisplay = []; // temp variable to update series selected displayed to user
 
-		form.seriesNameSelected = seriesSelected.filter(series => series !== event.currentTarget.dataset.name);
+		// Update series submitted in form, without the removed series
+		form.seriesNameSelected = form.seriesNameSelected.filter(series => series !== event.currentTarget.dataset.name);
 
+		// if series selected still exists, after removing one, then update the display list, san removed series.
+		// Otherwise, the series selected/displayed is now empty.
 		if(form.seriesNameSelected.length) {
 			for(let index in form.seriesNameSelected) {
-				seriesSelectedDisplay.push(
-					<li key={form.seriesNameSelected[index]}>
-						{form.seriesNameSelected[index]}
-						<span	className	= "close"
-								data-name	= {form.seriesNameSelected[index]}
-								onClick		= {this.handleSeriesClickRemove}>x</span>
-					</li>);
+				// recreate the list of series selected
+				seriesSelectedDisplay.push(getlistItemDisplay(index, form.seriesNameSelected[index], this.handleSeriesClickRemove));
 			}
 		}
 
+		// Update state of series displayed to user and submitted in form
 		this.setState({
 			seriesSelectedDisplay,
 			form
 		})
 	}
 
+	// From the category search modal results, add a category clicked, to the selected category list
 	handleCategoryClick(event) {
 		const	state							= this.state,
 				form							= state.form,
@@ -409,19 +413,17 @@ export default class Edit extends React.Component {
 				categoryNamesSelectedDisplay	= state.categoryNamesSelectedDisplay,
 				categoriesSelectedLowerCased 	= state.categoriesSelectedLowerCased;
 
+		// If the category name is not already selected, then add to list of categories selected
+		// Note: categories should't appear in search overlay, to select, if already selected
 		if(form.categoryNamesSelected.indexOf(categoryName) === -1) {
+			// Update the categories selected form key and lowercased comparison key
 			form.categoryNamesSelected.push(categoryName);
 			categoriesSelectedLowerCased.push(categoryName.toLowerCase());
 
-			//form.categoryName = ""; //  A component is changing an uncontrolled input of type text to be controlled
+			// Add selected category to the top of the categories selected display
+			categoryNamesSelectedDisplay.unshift(getlistItemDisplay(categoryName, categoryName, this.handleCategoryClickRemove));
 
-			categoryNamesSelectedDisplay.unshift(
-				<li key={categoryName}>
-					{categoryName}
-					<span className="close" data-name={categoryName} onClick={this.handleCategoryClickRemove}>x</span>
-				</li>
-			);
-
+			// Update state of categories selected and clear the category overlay results
 			this.setState({
 				categoryOverlay					: '',
 				categoryNamesSelectedDisplay,
@@ -478,12 +480,7 @@ export default class Edit extends React.Component {
 			id						= e.target.value,
 			name					= state.seriesById[id];
 
-		seriesSelectedDisplay.push(
-			<li key={id}>
-				{name}
-				<span className="close" data-name={name} onClick={this.handleSeriesClickRemove}>x</span>
-			</li>
-		);
+		seriesSelectedDisplay.push(getlistItemDisplay(id, name, this.handleSeriesClickRemove));
 
 		form.postSeriesSelected.push({
 			id, name
@@ -515,16 +512,24 @@ export default class Edit extends React.Component {
 			})
 			.then(res => checkAPIResponse(res))
 			.then(json => {
+				let savedPostStatuses = new Set();
 
-				setSavedPostStatuses("Deleted Post Categories", "deletedPostCategories", json, this);
-				setSavedPostStatuses("Saved Post Categories", "savedPostCategories", json, this);
-				setSavedPostStatuses("Save Flickr Set", "savedPostFlickrSet", json, this);
-				setSavedPostStatuses("Saved Post Series", "savedPostSeries", json, this);
-				setSavedPostStatuses("Deleted Post Series", "deletedPostSeries", json, this);
+				// Display alert messages for components of form
+				savedPostStatuses.add(setSavedPostStatuses("Deleted Post Categories", "deletedPostCategories", json, this));
+				savedPostStatuses.add(setSavedPostStatuses("Saved Post Categories", "savedPostCategories", json, this));
+				savedPostStatuses.add(setSavedPostStatuses("Save Flickr Set", "savedPostFlickrSet", json, this));
+				savedPostStatuses.add(setSavedPostStatuses("Saved Post Series", "savedPostSeries", json, this));
+				savedPostStatuses.add(setSavedPostStatuses("Deleted Post Series", "deletedPostSeries", json, this));
+				savedPostStatuses.delete(null);
 
+				// Check status of main elements of form (no including components above)
 				if(json.savePost && json.savePost.affectedRows && json.savePost.affectedRows > 0) {
+					// Main form saved successfully
+
+					// Check if adding a new post or editing an existing one
 					let  postAdded = action === "addPost" && json.savePost.insertId > 0 ? true : false;
 
+					// Depending on edit or add, set state to display correct message
 					this.setState({
 						id				: postAdded ? json.savePost.insertId : this.state.id,
 						updatePosted	: true,
@@ -532,6 +537,7 @@ export default class Edit extends React.Component {
 					});
 
 					if(postAdded) {
+						// A new post was added. Set a countdown for a redirect to the edit form
 						setInterval(() => {
 							this.setState({redirectCountDown : this.state.redirectCountDown - 1});
 
@@ -540,26 +546,27 @@ export default class Edit extends React.Component {
 							})
 						}, 1000);
 
+						// Redirect to Edit form
 						setTimeout(() => {
 							document.location.href = `/posts/edit/${json.savePost.insertId}`;
 						}, 5000);
 					} else {
+						// Edit saved, clear out success message in 5 seconds
 						setTimeout(() => this.setState({
 							saveStatus	: null
 						}), 5000);
 					}
 
 				} else {
-					if(json.savePost && json.savePost.message && json.savePost.message.length) {
-						this.setState({
-							updatePosted	: false,
-							saveStatus		: 	<div className="alert alert-danger">Error Saving Post.
-													{	json.savePost && json.savePost.message && json.savePost.message.length ?
-															" " + json.savePost.message : " Unknown Error."
-													}
-												</div>
-						});
-					}
+					// Post was not saved successfully. Display error return or unknown for none
+					this.setState({
+						updatePosted	: false,
+						saveStatus		: 	<div className="alert alert-danger">Error Saving Post.
+												{	json.savePost && json.savePost.message && json.savePost.message.length ?
+														" " + json.savePost.message : " Unknown Error."
+												}
+											</div>
+					});
 				}
 
 
