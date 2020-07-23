@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from 'react-router-dom'
+import { checkAPIResponse } from '../helpers/api'
 
 export default class Series extends React.Component {
 	constructor(props) {
@@ -28,7 +29,7 @@ export default class Series extends React.Component {
 
 	getSeries() {
 		fetch(`${process.env.REACT_APP_API_URL}/getSeries`)
-			.then(res => res.json())
+			.then(res => checkAPIResponse(res))
 			.then(
 				result => {
 					const 	seriesByName	= {},
@@ -93,7 +94,7 @@ export default class Series extends React.Component {
 				body	: JSON.stringify({id,name}),
 				headers	: {	'Content-Type': 'application/json'}
 			})
-			.then(res => res.json())
+			.then(res => checkAPIResponse(res))
 			.then( result => {
 				if(result.affectedRows && result.affectedRows > 0) {
 
@@ -143,7 +144,7 @@ export default class Series extends React.Component {
 			body	: JSON.stringify({newSeries : this.state.newSeries}),
 			headers	: {	'Content-Type': 'application/json'}
 		})
-		.then(res => res.json())
+		.then(res => checkAPIResponse(res))
 		.then( result => {
 			if(result.addSeries.affectedRows && result.addSeries.affectedRows > 0) {
 

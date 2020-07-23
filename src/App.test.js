@@ -119,7 +119,7 @@ test('Has Post Text', () => {
 		const add = await waitForElement(() => getByTestId("Save"))
 
 		expect(add).toHaveAttribute('type', 'submit')
-	})
+	}, 10000)
 
 	// /posts/edit
 	it('should navigate to the edit page loading', async ()=> {
@@ -139,14 +139,14 @@ test('Has Post Text', () => {
 
 		fireEvent.click(getByTestId('Posts'))
 
-		await waitForElement(() => getByText("Title"))
+		await waitForElement(	() => getByText("Title"));
 
 		fireEvent.click(getByTestId('38'))
 
 		const edit = await waitForElement(() => getByTestId("Save"))
 
 		expect(edit).toHaveAttribute('type', 'submit')
-	})
+	}, 10000)
 
 	// /categories
 	it('should navigate to the categories page loading', ()=> {

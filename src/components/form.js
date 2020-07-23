@@ -1,35 +1,12 @@
 import React from "react";
 import { Editor } from '@tinymce/tinymce-react';
+import { getSelectDateOptions } from "../helpers/form"
+
+
 
 export default class Form extends React.Component {
 	render() {
-		const	form 	= this.props.form,
-				d 		= new Date(),
-				years	= [],
-				months	= [],
-				days	= [],
-				hours	= [],
-				minutes	= [];
-
-		for(let x = d.getFullYear(); x > 2005; x--) {
-			years.push(<option value={x} key={x}>{x}</option>);
-		}
-
-		for(let x = 1; x < 13; x++) {
-			months.push(<option value={x} key={x}>{x < 10 ? `0${x}` : x}</option>);
-		}
-
-		for(let x = 1; x < 32; x++) {
-			days.push(<option value={x} key={x}>{x < 10 ? `0${x}` : x}</option>);
-		}
-
-		for(let x = 0; x < 24; x++) {
-			hours.push(<option value={x} key={x}>{x < 10 ? `0${x}` : x}</option>);
-		}
-
-		for(let x = 0; x < 61; x++) {
-			minutes.push(<option value={x} key={x}>{x < 10 ? `0${x}` : x}</option>);
-		}
+		const	form 	= this.props.form;
 
 		return(
 			<div className="edit">
@@ -63,29 +40,29 @@ export default class Form extends React.Component {
 							<select	name		= "publishYear"
 									value		= {form.publishYear}
 									onChange	= {this.props.handleTextUpdate}>
-								{years}
+								{getSelectDateOptions.years()}
 							</select>
 							<select	name		= "publishMonth"
 									value		= {form.publishMonth}
 									onChange	= {this.props.handleTextUpdate}>
-								{months}
+								{getSelectDateOptions.months()}
 							</select>
 							<select	name		= "publishDay"
 									value		= {form.publishDay}
 									onChange	= {this.props.handleTextUpdate}>
-								{days}
+								{getSelectDateOptions.days()}
 							</select>
 
 							&nbsp;&nbsp;&nbsp;
 							<select	name		= "publishHour"
 									value		= {form.publishHour}
 									onChange	= {this.props.handleTextUpdate}>
-								{hours}
+								{getSelectDateOptions.hours()}
 							</select>
 							<select	name		= "publishMinute"
 									value		= {form.publishMinute}
 									onChange	= {this.props.handleTextUpdate}>
-								{minutes}
+								{getSelectDateOptions.minutes()}
 							</select>
 						</div>
 

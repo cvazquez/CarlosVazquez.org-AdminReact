@@ -1,6 +1,6 @@
 import React from 'react'
 import {Link} from 'react-router-dom'
-
+import { checkAPIResponse } from '../helpers/api'
 
 export default class SeriesManager extends React.Component {
  	constructor(props) {
@@ -20,7 +20,7 @@ export default class SeriesManager extends React.Component {
 
 	componentDidMount() {
 		fetch(`${process.env.REACT_APP_API_URL}/getSeriesPostsById/${this.state.id}`)
-			.then(res => res.json())
+			.then(res => checkAPIResponse(res))
 			.then(result => {
 				let postsById = [];
 
@@ -60,7 +60,7 @@ export default class SeriesManager extends React.Component {
 				}),
 				headers	: {	'Content-Type': 'application/json'}
 			})
-			.then(res => res.json())
+			.then(res => checkAPIResponse(res))
 			.then(results => {
 				postsById[entryId].saveStatus = "Saved Successfully!";
 
