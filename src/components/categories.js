@@ -76,7 +76,14 @@ export default class Categories extends React.Component {
 
 					console.log("No Response from API getting categories", error)
 				}
-			).catch(error => console.error("API Request Categories Fetch Error:", error))
+			).catch(error => {
+
+				this.setState({
+					error
+				});
+
+				console.error("API Request Categories Fetch Error:", error);
+			})
 	}
 
 	componentDidMount() {
@@ -100,6 +107,52 @@ export default class Categories extends React.Component {
 		})
 	}
 
+	updateCategory(id, name, categoriesById) {
+		fetch(`${process.env.REACT_APP_API_URL}/updateCategory`, {
+			method	: 'POST',
+			body	: JSON.stringify({id,name}),
+			headers	: {	'Content-Type': 'application/json'}
+		})
+		.then(res => checkAPIResponse(res))
+		.then( result => {
+			if(result.affectedRows && result.affectedRows > 0) {
+
+				categoriesById[id].saveStatus = <span className='blink'>SAVED!</span>;
+				this.categoriesById[id] = name;
+
+				this.setState({
+					categoriesById
+				});
+
+				setTimeout(() => {
+					categoriesById[id].saveStatus = null;
+
+					this.setState({
+						categoriesById
+					});
+				}, 5000)
+			} else {
+				categoriesById[id].saveStatus = <span className='blink'>FAILED SAVING!</span>;
+
+				this.setState({
+					categoriesById
+				});
+
+				throw(new Error("Failed Saving updated category."))
+			}
+		},
+		error => {
+			categoriesById[id].saveStatus = <span className='blink'>FAILED SAVING!</span>;
+
+			this.setState({
+				error,
+				categoriesById
+			})
+
+			console.log("No Response from API saving categories", error)
+		}).catch(error => console.error("API Request Saving Updated category Fetch Error:", error));
+	}
+
 	// If a category is updated, post update to API to save to DB
 	handleCategoryBlur(e) {
 		// A blanked out category will deactivate it
@@ -112,49 +165,7 @@ export default class Categories extends React.Component {
 		// Category name didn't update, no need to save. Exit function
 		if(this.categoriesById[id] === name) return;
 
-		fetch(`${process.env.REACT_APP_API_URL}/updateCategory`, {
-				method	: 'POST',
-				body	: JSON.stringify({id,name}),
-				headers	: {	'Content-Type': 'application/json'}
-			})
-			.then(res => checkAPIResponse(res))
-			.then( result => {
-				if(result.affectedRows && result.affectedRows > 0) {
-
-					categoriesById[id].saveStatus = <span className='blink'>SAVED!</span>;
-					this.categoriesById[id] = name;
-
-					this.setState({
-						categoriesById
-					});
-
-					setTimeout(() => {
-						categoriesById[id].saveStatus = null;
-
-						this.setState({
-							categoriesById
-						});
-					}, 5000)
-				} else {
-					categoriesById[id].saveStatus = <span className='blink'>FAILED SAVING!</span>;
-
-					this.setState({
-						categoriesById
-					});
-
-					throw(new Error("Failed Saving updated category."))
-				}
-			},
-			error => {
-				categoriesById[id].saveStatus = <span className='blink'>FAILED SAVING!</span>;
-
-				this.setState({
-					error,
-					categoriesById
-				})
-
-				console.log("No Response from API saving categories", error)
-			}).catch(error => console.error("API Request Saving Updated category Fetch Error:", error));
+		this.updateCategory(id, name, categoriesById)
 	}
 
 	handleNewCategory(e) {
@@ -164,12 +175,10 @@ export default class Categories extends React.Component {
 		});
 	}
 
-	handleNewCategorySubmit(e) {
-		e.preventDefault();
-
+	addCategory(newCategory) {
 		fetch(`${process.env.REACT_APP_API_URL}/addCategory`, {
 			method	: 'POST',
-			body	: JSON.stringify({newCategory : this.state.newCategory}),
+			body	: JSON.stringify({newCategory}),
 			headers	: {	'Content-Type': 'application/json'}
 		})
 		.then(res => checkAPIResponse(res))
@@ -177,8 +186,8 @@ export default class Categories extends React.Component {
 			if(result.addedCategory.affectedRows && result.addedCategory.affectedRows > 0) {
 
 				this.setState({
-					newCategorySaveStatus	: <span className='blink'>SAVED "{this.state.newCategory}"!</span>,
-					savedCategory			: this.state.newCategory,
+					newCategorySaveStatus	: <span className='blink'>SAVED "{newCategory}"!</span>,
+					savedCategory			: newCategory,
 					newCategory				: ""
 				});
 
@@ -206,6 +215,12 @@ export default class Categories extends React.Component {
 
 
 		}).catch(error => console.log("Fetch Promise Error Saving New Category"));
+	}
+
+	handleNewCategorySubmit(e) {
+		e.preventDefault();
+
+		this.addCategory(this.state.newCategory);
 	}
 
 	render() {

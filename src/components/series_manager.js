@@ -7,19 +7,19 @@ export default class SeriesManager extends React.Component {
 		super(props);
 
 		this.state = {
-			id			: props.match.params.id,
+			id			: (props.match && props.match.params.id) || props.id, // props.id from testing
 			loading		: true,
 			error		: null,
 			seriesPosts : null,
-			name		: props.location.state && props.location.state.name,  // TODO - this will not exist when copy/pasting url
+			name		: props.location && props.location.state && props.location.state.name,  // TODO - this will not exist when copy/pasting url
 			postsById	: []
 		};
 
 		this.handleSequenceChange = this.handleSequenceChange.bind(this);
 	}
 
-	componentDidMount() {
-		fetch(`${process.env.REACT_APP_API_URL}/getSeriesPostsById/${this.state.id}`)
+	getSeriesPostsById(id) {
+		fetch(`${process.env.REACT_APP_API_URL}/getSeriesPostsById/${id}`)
 			.then(res => checkAPIResponse(res))
 			.then(result => {
 				let postsById = [];
@@ -39,8 +39,17 @@ export default class SeriesManager extends React.Component {
 				})
 			},
 			error => {
-
+				throw(new Error("getSeriesPostsById Error: ", error));
 			})
+			.catch(error => {
+				this.setState({
+					error
+				});
+			})
+	}
+
+	componentDidMount() {
+		this.getSeriesPostsById(this.state.id);
 	}
 
 	handleSequenceChange(e) {
