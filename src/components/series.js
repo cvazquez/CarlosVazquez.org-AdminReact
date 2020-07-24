@@ -41,10 +41,6 @@ export default class Series extends React.Component {
 		this.handleNewSeriesSubmit	= this.handleNewSeriesSubmit.bind(this);
 	}
 
-	test() {
-		return "hello";
-	}
-
 	// Request series to display and edit
 	getSeries() {
 		return new Promise(resolve => {
