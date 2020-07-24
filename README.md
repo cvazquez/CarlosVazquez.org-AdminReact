@@ -1,4 +1,4 @@
-Future Admin for http://www.carlosvazquez.org
+Admin for http://www.carlosvazquez.org
 
 Uses Create React App
 https://github.com/facebook/create-react-app
