@@ -1,16 +1,19 @@
 import React from 'react'
 import {Link} from 'react-router-dom'
 import { checkAPIResponse } from '../helpers/api'
+import { selectOptionsSequenceFactory } from '../helpers/form'
 
 export default class SeriesManager extends React.Component {
  	constructor(props) {
 		super(props);
 
+		this._isMounted = false;
+
 		this.state = {
-			id			: (props.match && props.match.params.id) || props.id, // props.id from testing
+			id			: props.match && props.match.params.id,
 			loading		: true,
 			error		: null,
-			seriesPosts : null,
+			seriesPosts : [],
 			name		: props.location && props.location.state && props.location.state.name,  // TODO - this will not exist when copy/pasting url
 			postsById	: []
 		};
@@ -19,107 +22,147 @@ export default class SeriesManager extends React.Component {
 	}
 
 	getSeriesPostsById(id) {
-		fetch(`${process.env.REACT_APP_API_URL}/getSeriesPostsById/${id}`)
-			.then(res => checkAPIResponse(res))
-			.then(result => {
-				let postsById = [];
+		return new Promise(resolve => {
+			fetch(`${process.env.REACT_APP_API_URL}/getSeriesPostsById/${id}`)
+				.then(res => checkAPIResponse(res))
+				.then(results => {
+					if(results.seriesPosts && Array.isArray(results.seriesPosts)) {
 
-				result.seriesPosts.forEach(post => {
-					postsById[post.entryId] = {
-						sequence	: post.sequence,
-						title		: post.title,
-						saveStatus	: null
+						let postsById = [];
+
+						results.seriesPosts.forEach(post => {
+							postsById[post.entryId] = {
+								sequence	: post.sequence,
+								title		: post.title,
+								saveStatus	: null
+							}
+						});
+
+						this._isMounted && this.setState({
+							seriesPosts : results.seriesPosts,
+							loading		: false,
+							postsById
+						})
+
+						resolve(true);
+					} else {
+						throw(new Error("API did not return any posts for this series. Try adding some."))
 					}
-				});
-
-				this.setState({
-					seriesPosts : result.seriesPosts,
-					loading		: false,
-					postsById
+				},
+				error => {
+					throw(new Error("getSeriesPostsById Error: ", error));
 				})
-			},
-			error => {
-				throw(new Error("getSeriesPostsById Error: ", error));
 			})
 			.catch(error => {
-				this.setState({
+				this._isMounted && this.setState({
 					error
 				});
 			})
 	}
 
 	componentDidMount() {
+		this._isMounted = true;
+
+		// Get list of posts, and their sequence in this Series
 		this.getSeriesPostsById(this.state.id);
 	}
 
-	handleSequenceChange(e) {
-		const	sequence	= e.target.value,
-				entryId		= e.currentTarget.dataset.entryid,
-				postsById	= this.state.postsById;
+	componentWillUnmount() {
+		this._isMounted = false;
+	 }
 
-		postsById[entryId].sequence = sequence;
-
+	updatePostSeriesSequence(postId, seriesId, sequence, postsById) {
 		fetch(`${process.env.REACT_APP_API_URL}/updatePostSeriesSequence`,
 			{
 				method	: 'POST',
 				body	: JSON.stringify({
-					postId		: entryId,
-					seriesId	: this.state.id,
+					postId,
+					seriesId,
 					sequence
 				}),
 				headers	: {	'Content-Type': 'application/json'}
 			})
 			.then(res => checkAPIResponse(res))
 			.then(results => {
-				postsById[entryId].saveStatus = "Saved Successfully!";
 
-				this.setState({
-					postsById
-				});
+				if(results.saveSequence && results.saveSequence.affectedRows && results.saveSequence.affectedRows === 1) {
 
-				setTimeout(() => {
-					postsById[entryId].saveStatus = null;
+					// Display success save status of this post's sequence in series
+					postsById[postId].saveStatus = "Saved Successfully!";
 
-					this.setState({
+					this._isMounted && this.setState({
 						postsById
-					})
-				}, 5000);
+					});
+
+					setTimeout(() => {
+						// Remove display status
+						postsById[postId].saveStatus = null;
+
+						this._isMounted && this.setState({
+							postsById
+						})
+					}, 5000);
+				} else {
+
+					throw(new Error("Series Posts Update failed. No DB records updated. Refresh and try again."));
+				}
+
 			},
 			error => {
-				postsById[entryId].saveStatus = "Error saving!!";
+				throw(new Error("Series Posts Update failed. API might be down. Refresh And Try Again. : ", error));
+			})
+			.catch(error => {
+				// Display failed save status of this post's sequence in series
+				postsById[postId].saveStatus = "Failed saving!!";
 
-				this.setState({
+				this._isMounted && this.setState({
 					postsById,
 					error
 				})
 			});
 	}
 
+	// The select options drop down of the posts sequence in the series was changed. Initiate an API change
+	handleSequenceChange(e) {
+		const	sequence	= e.target.value,
+				postId		= e.currentTarget.dataset.entryid,
+				postsById	= this.state.postsById,
+				seriesId	= this.state.id;
+
+		// Update the sequence of the post
+		postsById[postId].sequence = sequence;
+
+		// API call to DB update this posts series sequence
+		this.updatePostSeriesSequence(postId, seriesId, sequence, postsById)
+	}
+
 	render() {
 		const {loading, error, name, seriesPosts, postsById} = this.state;
 
 		if(error) {
-			return <>Error Loading</>
+			return <>Error Loading This Series Post Sequence. Refresh page and try again.</>
 		} else if(loading) {
 			return <>Loading...</>
 		} else {
-			const sequenceOptions = [];
-
-			for(let x = 1; x < seriesPosts.length+1; x++) {
-				sequenceOptions.push(<option value={x} key={x}>{x}</option>)
-			}
-
+			/* 	For each post in a series,
+				display a drop down sequence of numbers,
+				from 1 to number of posts in the series,
+				to control the order of each post in the series
+			*/
 			return <div className="series-manager">
 						<div className="series-manager-name">{name}</div>
 
 						<ul className="series-sequences">
-							{this.state.seriesPosts.map((post) => (
+							{	// Loop through each post in sequence
+								this.state.seriesPosts.map((post) => (
 								<li key={post.entryId}>
+
+									{/* Select the order this post should show in series list */}
 									<select	name			= "sequence"
 											value			= {postsById[post.entryId].sequence}
 											data-entryid	= {post.entryId}
 											onChange		= {this.handleSequenceChange}>
-										{sequenceOptions}
+										{selectOptionsSequenceFactory(1, seriesPosts.length)}
 									</select>
 
 									<Link to	= {`/posts/edit/${post.entryId}`}>

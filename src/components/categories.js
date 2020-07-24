@@ -37,52 +37,54 @@ export default class Categories extends React.Component {
 
 	// Request categories to display and edit
 	getCategories() {
-		fetch(`${process.env.REACT_APP_API_URL}/getCategories`)
-			.then(res => checkAPIResponse(res))
-			.then(
-				result => {
+		return new Promise(resolve => {
+			fetch(`${process.env.REACT_APP_API_URL}/getCategories`)
+				.then(res => checkAPIResponse(res))
+				.then(
+					result => {
+						if(result.categories && Array.isArray(result.categories)) {
+							const 	categoriesByName	= {},
+									categoriesById		= {};
 
-					if(result.categories && Array.isArray(result.categories)) {
-						const 	categoriesByName	= {},
-								categoriesById		= {};
+							result.categories.forEach(item => {
+								// Get a categories id by name
+								categoriesByName[item.name] = item.id;
 
-						result.categories.forEach(item => {
-							// Get a categories id by name
-							categoriesByName[item.name] = item.id;
+								// Stores initial state of category id's name value, for comparison when value updates are made
+								this.categoriesById[item.id] = item.name;
 
-							// Stores initial state of category id's name value, for comparison when value updates are made
-							this.categoriesById[item.id] = item.name;
+								// Get a categories name by id
+								categoriesById[item.id] = {
+									name		: item.name,
+									saveStatus	: null}; // don't change case. Displays in category search overlay results
+							});
 
-							// Get a categories name by id
-							categoriesById[item.id] = {
-								name		: item.name,
-								saveStatus	: null}; // don't change case. Displays in category search overlay results
-						});
+							this._isMounted && this.setState({
+								isLoaded			: true,
+								categoriesByName	: categoriesByName,
+								categoriesById		: categoriesById
+							});
 
+							resolve(true);
+						} else {
+							throw(new Error("getCategories() fetch missing categories array"));
+						}
+					},
+					error => {
 						this._isMounted && this.setState({
-							isLoaded			: true,
-							categoriesByName	: categoriesByName,
-							categoriesById		: categoriesById
-						});
-					} else {
-						throw(new Error("getCategories() fetch missing categories array"));
+							isLoaded	: false,
+							error
+						})
+
+						console.log("No Response from API getting categories", error)
 					}
-				},
-				error => {
-					this._isMounted && this.setState({
-						isLoaded	: false,
+				)}).catch(error => {
+
+					this.setState({
 						error
-					})
+					});
 
-					console.log("No Response from API getting categories", error)
-				}
-			).catch(error => {
-
-				this.setState({
-					error
-				});
-
-				console.error("API Request Categories Fetch Error:", error);
+					console.error("API Request Categories Fetch Error:", error);
 			})
 	}
 

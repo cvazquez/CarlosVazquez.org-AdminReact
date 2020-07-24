@@ -6,23 +6,39 @@ const	getlistItemDisplay = (key, name, handler) =>
 				<span className="close" data-name={name} onClick={handler}>x</span>
 			</li>,
 
-		selectOptionsSequenceFactory	=	end	=> {
+		selectOptionsSequenceFactory	=	(start, end, order="+")	=> {
 												let options = [];
 
-												for(let x = 1; x < end+1; x++) {
+												// Increments or decrements the loop, depending on order, and returns select options
+												for(let x = start; x > 0;) {
 													options.push(<option value={x} key={x}>{x.toString().padStart(2, '0')}</option>);
+
+													if(order === "+") {
+														if(x < end) {
+															x++;
+														} else {
+															break;
+														}
+													} else {
+														if(x > end) {
+															x--;
+														} else {
+															break;
+														}
+													}
 												}
 
 												return options;
-
 		},
-		d					= new Date(),
 		getSelectDateOptions	=	{
-			years	:	() => selectOptionsSequenceFactory(d.getFullYear()),
-			months	:	() => selectOptionsSequenceFactory(12),
-			days	: 	() => selectOptionsSequenceFactory(31),
-			hours	:	() => selectOptionsSequenceFactory(24),
-			minutes	:	() => selectOptionsSequenceFactory(60),
+			years	:	() => {
+								const d = new Date();
+								return selectOptionsSequenceFactory(d.getFullYear(), 2005, "-");
+			},
+			months	:	() => selectOptionsSequenceFactory(1, 12),
+			days	: 	() => selectOptionsSequenceFactory(1, 31),
+			hours	:	() => selectOptionsSequenceFactory(1, 24),
+			minutes	:	() => selectOptionsSequenceFactory(1, 60),
 		}
 
 export {getlistItemDisplay, getSelectDateOptions, selectOptionsSequenceFactory }

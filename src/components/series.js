@@ -1,3 +1,7 @@
+/*
+	* TODO - Combine Series and categories components
+*/
+
 import React from "react";
 import { Link } from 'react-router-dom'
 import { checkAPIResponse } from '../helpers/api'
@@ -37,13 +41,17 @@ export default class Series extends React.Component {
 		this.handleNewSeriesSubmit	= this.handleNewSeriesSubmit.bind(this);
 	}
 
+	test() {
+		return "hello";
+	}
+
 	// Request series to display and edit
 	getSeries() {
-		fetch(`${process.env.REACT_APP_API_URL}/getSeries`)
+		return new Promise(resolve => {
+			fetch(`${process.env.REACT_APP_API_URL}/getSeries`)
 			.then(res => checkAPIResponse(res))
 			.then(
 				result => {
-
 					if(result.series && Array.isArray(result.series)) {
 						const 	seriesByName	= {},
 								seriesById		= {};
@@ -68,6 +76,8 @@ export default class Series extends React.Component {
 							seriesById		: seriesById
 						});
 
+						resolve(true)
+
 					} else {
 						throw(new Error("getSeries() fetch missing series array"));
 					}
@@ -80,13 +90,14 @@ export default class Series extends React.Component {
 
 					throw(new Error("getSeries Error: ", error));
 				}
-			).catch(error => {
-				this.setState({
-					error
-				});
+			)
+		}).catch(error => {
+			this.setState({
+				error
+			});
 
-				console.error("API Request Series Fetch Error:", error);
-			})
+			console.error("API Request Series Fetch Error:", error);
+		})
 	}
 
 	componentDidMount() {
