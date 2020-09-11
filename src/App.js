@@ -33,24 +33,25 @@ const getNavLinks = () => [
 			path	: "/series",
 			text	: "Series"
 		},
-	]
+	],
 
-const getNavHeader = () =>
-	<ul className="header" data-testid="header">
-	{	// Loop through nav links and display at top of page
-		getNavLinks().map(link =>
-			<li key={link.text}>
-				<Link	to			= {link.path}
-						data-testid	= {link.text}>
-					{link.text}
-				</Link>
-			</li>
-		)
-	}
-	</ul>
+	getNavHeader = () =>
+		<ul className="header" data-testid="header">
+		{	// Loop through nav links and display at top of page
+			getNavLinks().map(link =>
+				<li key={link.text}>
+					<Link	to			= {link.path}
+							data-testid	= {link.text}>
+						{link.text}
+					</Link>
+				</li>
+			)
+		}
+		</ul>
+,
 
 // Displays our nav links and controls routes from links
-const App = () =>
+	App = () =>
 			<Router>
 				{getNavHeader()}
 
@@ -72,7 +73,7 @@ const App = () =>
 									component	= {SeriesManager} />
 				</Switch>
 			</Router>
-
+;
 
 export default App;
 export {getNavLinks as getLinks } // For testing

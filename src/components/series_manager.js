@@ -15,7 +15,8 @@ export default class SeriesManager extends React.Component {
 			error		: null,
 			seriesPosts : [],
 			name		: props.location && props.location.state && props.location.state.name,  // TODO - this will not exist when copy/pasting url
-			postsById	: []
+			postsById	: [],
+			isAdmin		: true,
 		};
 
 		this.handleSequenceChange = this.handleSequenceChange.bind(this);
@@ -41,7 +42,8 @@ export default class SeriesManager extends React.Component {
 						this._isMounted && this.setState({
 							seriesPosts : results.seriesPosts,
 							loading		: false,
-							postsById
+							postsById,
+							isAdmin		: results.isAdmin
 						})
 
 						resolve(true);
@@ -137,7 +139,8 @@ export default class SeriesManager extends React.Component {
 	}
 
 	render() {
-		const {loading, error, name, seriesPosts, postsById} = this.state;
+		const	{loading, error, name, seriesPosts, postsById} = this.state,
+				demoMessage = !this.state.isAdmin && <div className="alert alert-danger">Demo Mode</div>;
 
 		if(error) {
 			return <>Error Loading This Series Post Sequence. Refresh page and try again.</>
@@ -150,6 +153,7 @@ export default class SeriesManager extends React.Component {
 				to control the order of each post in the series
 			*/
 			return <div className="series-manager">
+						{demoMessage}
 						<div className="series-manager-name">{name}</div>
 
 						<ul className="series-sequences">

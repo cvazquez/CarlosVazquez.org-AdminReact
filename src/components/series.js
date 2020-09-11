@@ -17,6 +17,7 @@ export default class Series extends React.Component {
 			// componentDidMount api async call results
 			error				: null,
 			isLoaded			: false,
+			isAdmin				: true,
 
 			// Series list to display and edit
 			series			: [],
@@ -69,7 +70,8 @@ export default class Series extends React.Component {
 							isLoaded		: true,
 							series			: result.series,
 							seriesByName	: seriesByName,
-							seriesById		: seriesById
+							seriesById		: seriesById,
+							isAdmin			: result.isAdmin
 						});
 
 						resolve(true)
@@ -221,7 +223,8 @@ export default class Series extends React.Component {
 	}
 
 	render() {
-		const {error, isLoaded, seriesByName, seriesById, newSeriesName, newSeriesSaveStatus} = this.state;
+		const	{error, isLoaded, seriesByName, seriesById, newSeriesName, newSeriesSaveStatus} = this.state,
+				demoMessage = !this.state.isAdmin && <div className="alert alert-danger">Demo Mode</div>;
 
 		if (error) {
 			return <div>Error: {error.message}</div>;
@@ -230,6 +233,7 @@ export default class Series extends React.Component {
 		  } else {
 			return (
 				<div>
+					{demoMessage}
 					<div className="lists">
 						{/* Form and field to save a new series */}
 						<form action="POST" onSubmit={this.handleNewSeriesSubmit}>

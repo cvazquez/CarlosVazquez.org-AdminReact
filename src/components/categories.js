@@ -12,6 +12,7 @@ export default class Categories extends React.Component {
 			// componentDidMount api async call results
 			error				: null,
 			isLoaded			: false,
+			isAdmin				: true,
 
 			// Categories list to display and edit
 			categoriesByName	: {},
@@ -62,7 +63,8 @@ export default class Categories extends React.Component {
 							this._isMounted && this.setState({
 								isLoaded			: true,
 								categoriesByName	: categoriesByName,
-								categoriesById		: categoriesById
+								categoriesById		: categoriesById,
+								isAdmin				: result.isAdmin
 							});
 
 							resolve(true);
@@ -226,7 +228,8 @@ export default class Categories extends React.Component {
 	}
 
 	render() {
-		const {error, isLoaded, categoriesByName, categoriesById, newCategory, newCategorySaveStatus} = this.state;
+		const 	{error, isLoaded, categoriesByName, categoriesById, newCategory, newCategorySaveStatus} = this.state,
+				demoMessage = !this.state.isAdmin && <div className="alert alert-danger">Demo Mode</div>;
 
 		if (error) {
 			return <div>Error: {error.message}</div>;
@@ -234,6 +237,7 @@ export default class Categories extends React.Component {
 			return <div>Loading...</div>;
 		  } else {
 			return <div>
+					{demoMessage}
 					<div className="lists">
 						{/* Form and field to save a new category */}
 						<form action="POST" onSubmit={this.handleNewCategorySubmit}>

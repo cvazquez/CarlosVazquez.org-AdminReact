@@ -20,6 +20,7 @@ export default class Posts extends React.Component {
 			// Async check if posts have loaded
 			error		: null,
 			isLoaded	: false,
+			isAdmin		: true, // temporary (fake) security for demoing
 
 			// Posts loaded from API call
 			activeEntries	: [],
@@ -49,7 +50,8 @@ export default class Posts extends React.Component {
 						// Update render state to display active entries only and replace loading text
 						this._isMounted && this.setState({
 							isLoaded		: true,
-							activeEntries	: result.posts.filter(entry => entry.deletedAt === null)
+							activeEntries	: result.posts.filter(entry => entry.deletedAt === null),
+							isAdmin			: result.isAdmin
 						})
 
 					} else {
@@ -204,12 +206,14 @@ export default class Posts extends React.Component {
 
 		  } else {
 			// API call response is successful. Display list of posts.
+			const demoMessage = !this.state.isAdmin && <div className="alert alert-danger">Demo Mode</div>;
 
 			return (
 				<>
 					{	// When Deactivate is clicked, display the confirmation modal
 						this.getDeleteConfirmationModal()
 					}
+					{demoMessage}
 
 					<div className="grid-container posts">
 						<div className="grid-header-wrapper">

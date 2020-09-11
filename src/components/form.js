@@ -3,13 +3,11 @@ import { Editor } from '@tinymce/tinymce-react';
 import { getSelectDateOptions } from "../helpers/form"
 
 
-
 export default class Form extends React.Component {
 	render() {
-		const	form 	= this.props.form;
+		const	form 		= this.props.form;
 
-		return(
-			<div className="edit">
+		return	<div className="edit">
 				<form method="post" onSubmit={this.props.handleSubmit}>
 					<div className="meta-fields">
 						<input 	type="text"
@@ -140,6 +138,5 @@ export default class Form extends React.Component {
 							data-testid	= "Save"  />
 				</form>
 			</div>
-		)
 	}
 }

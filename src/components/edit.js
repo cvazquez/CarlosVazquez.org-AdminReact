@@ -38,6 +38,7 @@ export default class Edit extends React.Component {
 			// Loading Async Init
 			error							: null,
 			isLoaded						: false,
+			isAdmin							: true,
 
 			// Category
 			postCategories					: [],
@@ -177,9 +178,10 @@ export default class Edit extends React.Component {
 								seriesSelectedDisplay.push(getlistItemDisplay(series.id, series.name, this.handleSeriesClickRemove));
 							});
 
-
+console.log(post)
 						this._isMounted && this.setState({
 							isLoaded			: true,
+							isAdmin				: result.isAdmin,
 
 							form		: {
 								title					: post.title,
@@ -249,7 +251,8 @@ export default class Edit extends React.Component {
 							series				: result.series,
 							categories			: result.categories,
 							categoryOverlay		: null,
-							form
+							form,
+							isAdmin				: result.isAdmin
 						});
 					} else {
 						throw new Error("Result new post response is invalid. Check API response")
@@ -604,14 +607,15 @@ export default class Edit extends React.Component {
 	}
 
 	post() {
-		const {error, isLoaded, form} = this.state;
-
+		const	{error, isLoaded, form} = this.state,
+				demoMessage = !this.state.isAdmin && <div className="alert alert-danger">Demo Mode</div>;
+console.log(this.state.isAdmin)
 		if (error) {
 			return <div>Error: {error.message}</div>;
 		  } else if (!isLoaded) {
 			return <div>Loading...</div>;
 		  } else {
-			return (
+			return <>{demoMessage}
 					<Form	form							= {form}
 
 							// Handlers
@@ -640,7 +644,7 @@ export default class Edit extends React.Component {
 							savedPostSeriesStatus			= {this.state.savedPostSeriesStatus}
 							deletedPostSeriesStatus			= {this.state.deletedPostSeriesStatus}
 					/>
-			)
+			</>
 		}
 	}
 
