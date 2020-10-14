@@ -7,8 +7,7 @@ import {
   } from "react-router-dom";
 import Posts from './components/posts';
 import Edit from './components/edit';
-import Categories from './components/categories'
-import Series from './components/series'
+import SelectOptions from './components/select_options';
 import SeriesManager from './components/series_manager'
 
 // Create an array of nav link objects, to loop over and display in nav bar at top of page
@@ -65,10 +64,14 @@ const getNavLinks = () => [
 									component	= {Edit} />
 					<Route 			path		= "/posts/add"
 									component	= {Edit} />
-					<Route 			path		= "/categories"
-									component	= {Categories} />
-					<Route exact 	path		= "/series"
-									component	= {Series} />
+					<Route 			path		= "/categories">
+						<SelectOptions	name		= "Category"
+										namePlural 	= "Categories" />
+					</Route>
+					<Route exact 	path		= "/series">
+						<SelectOptions	name		= "Series"
+										namePlural	= "Series" />
+					</Route>
 					<Route 			path		= "/series/:id"
 									component	= {SeriesManager} />
 				</Switch>

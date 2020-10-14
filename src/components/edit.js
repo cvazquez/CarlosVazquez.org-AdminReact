@@ -178,7 +178,6 @@ export default class Edit extends React.Component {
 								seriesSelectedDisplay.push(getlistItemDisplay(series.id, series.name, this.handleSeriesClickRemove));
 							});
 
-console.log(post)
 						this._isMounted && this.setState({
 							isLoaded			: true,
 							isAdmin				: result.isAdmin,
@@ -609,12 +608,12 @@ console.log(post)
 	post() {
 		const	{error, isLoaded, form} = this.state,
 				demoMessage = !this.state.isAdmin && <div className="alert alert-danger">Demo Mode</div>;
-console.log(this.state.isAdmin)
+
 		if (error) {
 			return <div>Error: {error.message}</div>;
-		  } else if (!isLoaded) {
+		} else if (!isLoaded) {
 			return <div>Loading...</div>;
-		  } else {
+		} else {
 			return <>{demoMessage}
 					<Form	form							= {form}
 

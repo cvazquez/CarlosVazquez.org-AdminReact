@@ -157,24 +157,26 @@ export default class SeriesManager extends React.Component {
 						<div className="series-manager-name">{name}</div>
 
 						<ul className="series-sequences">
-							{	// Loop through each post in sequence
-								this.state.seriesPosts.map((post) => (
-								<li key={post.entryId}>
+							{	this.state.seriesPosts.length ?
+								// Loop through each post in sequence
+								this.state.seriesPosts.map(post => (
+									<li key={post.entryId}>
 
-									{/* Select the order this post should show in series list */}
-									<select	name			= "sequence"
-											value			= {postsById[post.entryId].sequence}
-											data-entryid	= {post.entryId}
-											onChange		= {this.handleSequenceChange}>
-										{selectOptionsSequenceFactory(1, seriesPosts.length)}
-									</select>
+										{/* Select the order this post should show in series list */}
+										<select	name			= "sequence"
+												value			= {postsById[post.entryId].sequence}
+												data-entryid	= {post.entryId}
+												onChange		= {this.handleSequenceChange}>
+											{selectOptionsSequenceFactory(1, seriesPosts.length)}
+										</select>
 
-									<Link to	= {`/posts/edit/${post.entryId}`}>
-										{post.title}
-									</Link>
-									<span>{postsById[post.entryId].saveStatus}</span>
-								</li>
-							))}
+										<Link to	= {`/posts/edit/${post.entryId}`}>
+											{post.title}
+										</Link>
+										<span>{postsById[post.entryId].saveStatus}</span>
+									</li>
+								)) : <>No Posts asssigned to this series</>
+							}
 						</ul>
 					</div>
 		}
