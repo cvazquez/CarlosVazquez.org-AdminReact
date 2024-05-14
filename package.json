@@ -19,8 +19,8 @@
     "react-scripts": "3.4.1"
   },
   "scripts": {
-    "start": "PORT=3004 WDS_SOCKET_PORT=3004 react-scripts start",
-    "build": "PORT=3004 WDS_SOCKET_PORT=3004 react-scripts build",
+    "start": "react-scripts start",
+    "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom-fourteen",
     "eject": "react-scripts eject"
   },
