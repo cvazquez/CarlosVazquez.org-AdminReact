@@ -1,3 +1,5 @@
+Archived - use https://github.com/cvazquez/CarlosVazquez.org-AdminReactHooksRedux instead
+
 Admin for http://www.carlosvazquez.org
 
 Uses Create React App
