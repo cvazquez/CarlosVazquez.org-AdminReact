@@ -9,14 +9,14 @@
     "type": "git",
     "url": "https://github.com/cvazquez/CarlosVazquez.org-AdminReact"
   },
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "dependencies": {
-    "@tinymce/tinymce-react": "^3.6.0",
-    "react": "^16.13.1",
-    "react-dom": "^16.13.1",
-    "react-router-dom": "^5.2.0",
-    "react-scripts": "3.4.1"
+    "@tinymce/tinymce-react": "^5.0.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.23.1",
+    "react-scripts": "5.0.1"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -40,6 +40,7 @@
     ]
   },
   "devDependencies": {
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
     "@testing-library/jest-dom": "^5.11.2",
     "@testing-library/react": "^10.4.7",
     "@testing-library/user-event": "^12.1.0",

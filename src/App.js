@@ -1,7 +1,7 @@
 import React from 'react';
 import {
 	BrowserRouter as Router,
-	Switch,
+	Routes,
 	Route,
 	Link
   } from "react-router-dom";
@@ -55,26 +55,33 @@ const getNavLinks = () => [
 				{getNavHeader()}
 
 				{/* React Router controlls paths from nav link clicks */}
-				<Switch>
+				<Routes>
 					{/* Exact paths keep each sub folder from overriding parent path */}
-					<Route exact	path		= "/" />
+					<Route exact	path		= "/"
+									element		= "" />
 					<Route exact	path		= "/posts"
-									component	= {Posts} />
+									element		= {<Posts />} />
 					<Route 			path		= "/posts/edit/:id"
-									component	= {Edit} />
+									element		= {<Edit />} />
 					<Route 			path		= "/posts/add"
-									component	= {Edit} />
-					<Route 			path		= "/categories">
-						<SelectOptions	name		= "Category"
-										namePlural 	= "Categories" />
-					</Route>
-					<Route exact 	path		= "/series">
-						<SelectOptions	name		= "Series"
-										namePlural	= "Series" />
-					</Route>
+									element		= {<Edit />} />
+					<Route 			path		= "/categories"
+									element		= {
+										<SelectOptions	name		= "Category"
+														namePlural 	= "Categories"
+										/>
+									}
+					/>
+					<Route exact 	path		= "/series"
+									element		= {
+										<SelectOptions	name		= "Series"
+														namePlural	= "Series"
+										/>
+									}
+					/>
 					<Route 			path		= "/series/:id"
-									component	= {SeriesManager} />
-				</Switch>
+									element		= {<SeriesManager />} />
+				</Routes>
 			</Router>
 ;
 
